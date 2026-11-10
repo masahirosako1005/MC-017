@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>運営画面（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 運営画面（観光協会・店舗）の見た目の正。外部の読み込みなし。画面は #a01〜#a14、利用者アプリへの追加の見本は #user-add。仕様: docs/10_企画/運営向け画面_仕様案.md、設計: docs/20_設計/画面設計/SC-Axx_*.md。数字は CSV から取ったもの（出典つき）以外は見本の数字。 -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --shop:#7A4FB5; --shop-l:#EFE7FA;
+  --bg:#FAF6EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#E4DACA;
+  --warn:#B3261E; --warn-l:#FDECEA; --ok:#1F6E3A; --ok-l:#E3F3E7;
+  --sh:0 4px 12px rgba(90,64,24,.08),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+a{color:var(--main-d)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:0;background:#fff;padding:8px 12px;z-index:20}
+.skip:focus{left:8px;top:8px}
+/* 上の帯 */
+.top{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:10px 24px;background:var(--main-d);color:#fff}
+.top .brand{font-weight:800;font-size:1.05rem;margin:0}
+.top .role{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:2px 12px;border-radius:999px;background:#fff;color:var(--main-d);font-weight:800;font-size:.9rem}
+.top .role.shop{color:var(--shop)}
+.top .sp{flex:1}
+.top label{font-size:.9rem;font-weight:700}
+.top select{min-height:44px;border-radius:10px;border:0;padding:0 10px;margin-left:6px;background:#fff;color:var(--ink)}
+.top label[hidden]{display:none}
+.top a{color:#fff;font-weight:700;display:inline-flex;align-items:center;min-height:44px}
+.sample-note{background:var(--accent-l);color:var(--accent-ink);font-size:.85rem;padding:6px 24px;margin:0;border-bottom:1px solid var(--line)}
+/* 左のメニュー */
+.wrap{display:flex;align-items:flex-start}
+.side{flex:none;width:236px;padding:16px 12px;position:sticky;top:64px}
+.side h2{font-size:.8rem;color:var(--ink2);margin:8px 10px 4px;letter-spacing:.05em}
+.side ul{list-style:none;margin:0 0 12px;padding:0}
+.side a{display:flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;text-decoration:none;color:var(--ink);font-weight:700}
+.side a:hover{background:var(--main-ll)}
+.side a[aria-current="page"]{background:var(--main);color:#fff}
+.side .grp[hidden]{display:none}
+main{flex:1;min-width:0;padding:20px 28px 60px}
+section.scr{display:none;max-width:1100px}
+section.scr.on{display:block}
+.scr > h1{font-size:1.5rem;margin:0 0 4px}
+.scr > .lead{margin:0 0 16px;color:var(--ink2)}
+.idtag{display:inline-block;font-size:.75rem;font-weight:800;background:var(--ink);color:#fff;border-radius:6px;padding:0 7px;margin-right:8px;vertical-align:middle}
+h2{font-size:1.15rem;margin:24px 0 8px}
+h3{font-size:1rem;margin:16px 0 6px}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:16px 18px}
+.grid{display:grid;gap:14px}
+.g5{grid-template-columns:repeat(auto-fill,minmax(min(190px,100%),1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))}
+.g2{grid-template-columns:repeat(auto-fill,minmax(min(440px,100%),1fr))}
+/* 数字のカード */
+.kpi .nm{display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--ink2);font-size:.9rem}
+.kpi .v{font-size:2rem;font-weight:800;line-height:1.2;margin:6px 0 2px}
+.kpi .d{font-size:.88rem;font-weight:700}
+.up{color:var(--ok)} .down{color:var(--warn)}
+.defbtn{min-height:44px;min-width:44px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:.8rem;font-weight:700;padding:0 8px}
+/* 表 */
+table{border-collapse:collapse;width:100%;background:#fff}
+caption{text-align:left;font-weight:800;padding:0 0 6px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:middle}
+thead th{background:var(--main-ll);font-size:.88rem}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.barcell{width:38%}
+.bar{display:block;height:14px;border-radius:7px;background:var(--main)}
+.bar.alt{background:var(--accent-d)}
+.bar.hi{background:var(--warn)}
+.small{font-size:.85rem;color:var(--ink2)}
+.ref{color:var(--ink2);font-style:normal;font-size:.8rem;border:1px solid var(--line);border-radius:6px;padding:0 5px;margin-left:4px}
+.hide{color:var(--ink2);font-size:.85rem}
+/* 気づき */
+.insight{border-left:6px solid var(--accent-d)}
+.insight.bad{border-left-color:var(--warn)}
+.insight b{display:block;margin-bottom:2px}
+.insight .ev{font-size:.85rem;color:var(--ink2)}
+/* ボタンと入力 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:10px;border:2px solid var(--main);background:var(--main);color:#fff;font-weight:800}
+.btn.sub{background:#fff;color:var(--main-d)}
+.btn.warn{background:#fff;color:var(--warn);border-color:var(--warn)}
+.btn[aria-disabled="true"]{background:#E4E2DC;border-color:#E4E2DC;color:#5F5E59;cursor:not-allowed}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px 18px}
+.f label,.f .lb{display:block;font-weight:700;font-size:.92rem;margin-bottom:4px}
+.f input,.f select,.f textarea{width:100%;min-height:44px;border:1px solid #9A9488;border-radius:10px;padding:6px 10px;background:#fff}
+.f textarea{min-height:72px}
+.f input[type="checkbox"],.f input[type="radio"]{width:22px;height:22px;min-height:0;padding:0;flex:none}
+.f .hint{font-size:.8rem;color:var(--ink2);margin:2px 0 0}
+.filters{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;margin-bottom:14px}
+.filters .f{min-width:170px}
+.chk{display:flex;align-items:center;gap:8px;min-height:44px;font-weight:700}
+.chk input{width:22px;height:22px}
+.chip{display:inline-block;border-radius:999px;padding:0 10px;font-size:.8rem;font-weight:800;white-space:nowrap}
+.c-wait{background:var(--accent-l);color:var(--accent-ink)}
+.c-act{background:var(--ok-l);color:var(--ok)}
+.c-end{background:#ECEBE7;color:#55544F}
+.c-rej{background:var(--warn-l);color:var(--warn)}
+.c-up{background:var(--shop-l);color:var(--shop)}
+.status{padding:10px 14px;border-radius:10px;font-weight:700}
+.status.ok{background:var(--ok-l);color:var(--ok)}
+.status.ng{background:var(--accent-l);color:var(--accent-ink)}
+.status.wa{background:var(--warn-l);color:var(--warn)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+/* 役割の選択 */
+.roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;max-width:960px}
+.rolebtn{display:flex;flex-direction:column;gap:4px;min-height:120px;padding:18px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:left;text-decoration:none;color:var(--ink);box-shadow:var(--sh)}
+.rolebtn b{font-size:1.15rem}
+.rolebtn.assoc{border-color:var(--main)}
+.rolebtn.shop{border-color:var(--shop)}
+/* 熱の表 */
+.heat td{text-align:center;font-variant-numeric:tabular-nums;min-width:52px}
+.l0{background:#fff} .l1{background:#E1F2EE} .l2{background:#B9E0D8} .l3{background:#7CC4B8} .l4{background:#0E7C74;color:#fff;font-weight:800}
+/* 盤とクーポンのプレビュー */
+.strip{display:flex;gap:6px;align-items:stretch;flex-wrap:wrap}
+.sq{width:76px;min-height:76px;border-radius:12px;background:#fff;border:2px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;text-align:center;padding:4px}
+.sq .ic{font-size:1.5rem;line-height:1}
+.sq.gift{background:#FFE9A8;border-color:var(--accent-d)}
+.sq.shop{background:var(--shop-l);border:3px dashed var(--shop);color:var(--shop)}
+.sq.me{border-color:var(--main);box-shadow:0 0 0 3px var(--main-l)}
+.ticket{display:flex;gap:12px;align-items:center;border-radius:14px;background:#fff;border:2px solid var(--shop);padding:12px 14px;max-width:420px}
+.ticket .ic{font-size:1.8rem}
+.ticket b{display:block}
+/* 利用者アプリの見本 */
+.phones{display:flex;flex-wrap:wrap;gap:28px}
+.phone{width:360px;background:#FFF8EE;border-radius:32px;padding:18px 16px 22px;box-shadow:0 0 0 7px #2A2724,0 16px 30px rgba(60,40,10,.22)}
+.phone h3{margin-top:0}
+.pbtn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;border-radius:14px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;margin-top:10px}
+.pbtn.sub{background:#fff;border:2px solid var(--main);color:var(--main-d)}
+.notice{background:var(--shop-l);border:2px solid var(--shop);border-radius:14px;padding:10px 12px;font-weight:700}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:6px 0 0}
+dl.kv dt{font-weight:700;color:var(--ink2)} dl.kv dd{margin:0}
+@media (max-width:900px){.wrap{display:block}.side{position:static;width:auto}.side ul{display:flex;flex-wrap:wrap;gap:4px}main{padding:16px}td.n,th.n{white-space:normal}.heat th,.heat td{min-width:0;padding:6px 3px;font-size:.85rem}.fields{grid-template-columns:1fr}.f[style*="span"]{grid-column:auto!important}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">本文へ</a>
+<header class="top">
+  <p class="brand">名古屋すごろく旅 運営画面（見本）</p>
+  <span class="role" id="roleChip">役割をえらんでください</span>
+  <span class="sp"></span>
+  <label id="periodBox">期間<select aria-label="期間"><option>直近28日（10/13〜11/09）</option><option>直近7日</option><option>直近90日</option></select></label>
+  <a href="#a01">役割を変える</a>
+</header>
+<p class="sample-note">この画面は 127.0.0.1 だけで動く見本です（ADMIN_MODE=1 のときだけ）。ログインはありません。数字は、出典のあるもの以外は見本の数字です。</p>
+
+<div class="wrap">
+<nav class="side" aria-label="運営メニュー">
+  <div class="grp" id="nav-assoc" hidden>
+    <h2>観光協会</h2>
+    <ul>
+      <li><a href="#a02">ダッシュボード</a></li>
+      <li><a href="#a03">再訪の因果</a></li>
+      <li><a href="#a04">困りごと</a></li>
+      <li><a href="#a05">スポット</a></li>
+      <li><a href="#a09">施策の記録と効果</a></li>
+      <li><a href="#a14">店の特典マスの確認</a></li>
+      <li><a href="#a07">設定（盤・特典・ボーナス）</a></li>
+      <li><a href="#a08">スポットの公開と季節</a></li>
+      <li><a href="#a12">データの状態</a></li>
+    </ul>
+  </div>
+  <div class="grp" id="nav-shop" hidden>
+    <h2>あかり堂</h2>
+    <ul>
+      <li><a href="#a10">店舗ダッシュボード</a></li>
+      <li><a href="#a15">お客さまの声</a></li>
+      <li><a href="#a13">近くの予定と特典マス</a></li>
+      <li><a href="#a11">自店のクーポン</a></li>
+    </ul>
+  </div>
+  <div class="grp" id="nav-ref">
+    <h2>参考</h2>
+    <ul><li><a href="#user-add">利用者アプリへの追加</a></li><li><a href="#states">共通の状態の見本</a></li></ul>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- SC-A01 -->
+<section class="scr" id="a01" data-role="none" aria-labelledby="a01-h">
+  <h1 id="a01-h"><span class="idtag">SC-A01</span>役割を選ぶ</h1>
+  <p class="lead">見本のため、ログインの代わりに役割をえらびます。店舗は自分の店の数字だけを見られます。</p>
+  <div class="roles">
+    <a class="rolebtn assoc" href="#a02"><b>観光協会</b><span class="small">全体の分析・設定・店の特典マスの確認</span></a>
+    <form class="rolebtn shop" id="shopForm" aria-labelledby="shop-t" novalidate>
+      <b id="shop-t">店舗</b><span class="small">自分の店の数字・クーポン・特典マス</span>
+      <div class="f"><label for="shop-pick">お店</label>
+        <select id="shop-pick" aria-describedby="shop-err">
+          <option value="" selected>お店をえらんでください</option>
+          <option value="s8">あかり堂（お土産・ちょうちん教室）</option>
+          <option value="s9">きしめん ひだまり（飲食）</option>
+          <option value="s11">みそかつ こもれび（飲食）</option>
+        </select></div>
+      <p class="status wa" id="shop-err" role="alert" hidden>⚠ お店をえらんでください</p>
+      <div class="actions" style="margin-top:2px"><button type="submit" class="btn">このお店で進む</button></div>
+    </form>
+  </div>
+  <p class="small" style="margin-top:16px">本番で運用するときは、役割ごとの認証が必要です（この見本では作りません）。モックでは、どの店を選んでもあかり堂の画面を出します（お店を選ばずに進むと、メッセージを出して止まります）。</p>
+</section>
+
+<!-- SC-A02 -->
+<section class="scr" id="a02" data-role="assoc" aria-labelledby="a02-h">
+  <h1 id="a02-h"><span class="idtag">SC-A02</span>ダッシュボード</h1>
+  <p class="lead">満足度ではなく、「次に来る理由を持って帰ったか」と「本当にまた来たか」を見ます。</p>
+  <div class="grid g5">
+    <div class="card kpi"><div class="nm">利用者数<button type="button" class="defbtn" aria-label="利用者数の定義">定義</button></div><div class="v">412人</div><div class="d up">▲ 36人（前の28日より）</div></div>
+    <div class="card kpi"><div class="nm">再訪率<button type="button" class="defbtn" aria-label="再訪率の定義">定義</button></div><div class="v">18.0%</div><div class="d up">▲ 3.2ポイント</div></div>
+    <div class="card kpi"><div class="nm">次の理由の保有率<button type="button" class="defbtn" aria-label="次の理由の保有率の定義">定義</button></div><div class="v">64%</div><div class="d down">▼ 5ポイント</div></div>
+    <div class="card kpi"><div class="nm">次回クーポンの利用率<button type="button" class="defbtn" aria-label="次回クーポンの利用率の定義">定義</button></div><div class="v">42%</div><div class="d">― 変わらず</div></div>
+  </div>
+  <p class="small">再訪＝前に来た日から7日以上あけて来た日。旅の2日目は数えません。次の理由＝帰るときに「盤の途中」「次に行く予定」「次に来た日から使えるクーポン」のどれかを持っていたこと。</p>
+
+  <h2>気づき（上位3件）</h2>
+  <div class="grid g3">
+    <div class="card insight bad"><b>帰るときに次の理由を持っている人が減っています</b><span class="ev">69% → 64%（前の28日と比べて）</span><div class="actions"><a class="btn sub" href="#a03">再訪の因果を見る</a></div></div>
+    <div class="card insight"><b>次回クーポンを持って帰った人は、持たない人の2.3倍戻っています</b><span class="ev">再訪率 24%（119人）／ 10%（149人）。関係であり、原因とは限りません</span><div class="actions"><a class="btn sub" href="#a03">理由ごとの再訪率を見る</a></div></div>
+    <div class="card insight"><b>移動の不安が、いちばん多い困りごとです</b><span class="ev">95件／287件（参加後アンケート、データ調査.md §2.4）</span><div class="actions"><a class="btn sub" href="#a04">困りごとを見る</a></div></div>
+  </div>
+
+</section>
+
+<!-- SC-A03 -->
+<section class="scr" id="a03" data-role="assoc" aria-labelledby="a03-h">
+  <h1 id="a03-h"><span class="idtag">SC-A03</span>再訪の因果</h1>
+  <p class="lead">体験 → 気持ち → 次に来る理由 → 再訪 の、どの段で人が減っているかを見ます。</p>
+  <form class="filters" aria-label="絞り込み">
+    <div class="f"><label for="f-age">年代</label><select id="f-age"><option>すべて</option><option>10代</option><option>20代</option><option>30代</option><option>40代</option><option>50代</option><option>60代以上</option></select></div>
+    <div class="f"><label for="f-comp">一緒に来た人</label><select id="f-comp"><option>すべて</option><option>ひとり</option><option>家族</option><option>ふたり</option><option>友だち</option></select></div>
+    <div class="f"><label for="f-av">アバター</label><select id="f-av"><option>すべて</option><option>ともにゃん</option><option>ほしろう</option><option>ぴっこん</option><option>とうじい</option></select></div>
+    <label class="chk"><input type="checkbox">段差少なめの人だけ</label>
+  </form>
+  <table>
+    <caption>段ごとの人数（見本の数字）</caption>
+    <thead><tr><th scope="col">段</th><th scope="col" class="n">人数</th><th scope="col" class="n">前の段から</th><th scope="col" class="barcell"><span class="small">棒（人数）</span></th></tr></thead>
+    <tbody>
+      <tr><th scope="row">来た</th><td class="n">412</td><td class="n">―</td><td><span class="bar" style="width:100%"></span></td></tr>
+      <tr><th scope="row">きっかけ（QR・ひとこと・誘う）</th><td class="n">368</td><td class="n">89%</td><td><span class="bar" style="width:89%"></span></td></tr>
+      <tr><th scope="row">さいころを振った</th><td class="n">351</td><td class="n">95%</td><td><span class="bar" style="width:85%"></span></td></tr>
+      <tr><th scope="row">次の理由を持って帰った</th><td class="n">263</td><td class="n">75%</td><td><span class="bar alt" style="width:64%"></span></td></tr>
+      <tr><th scope="row">7日以上あけて再訪した</th><td class="n">59</td><td class="n">22% ▼</td><td><span class="bar hi" style="width:14%"></span></td></tr>
+      <tr><th scope="row">予定の場所に行くか、クーポンを使った</th><td class="n">52</td><td class="n">88%</td><td><span class="bar" style="width:13%"></span></td></tr>
+    </tbody>
+  </table>
+  <p class="small">各段は、前の段も通った人だけを数えます。次の理由を持たずに帰って再訪した人（15人）は段の外で、再訪した人の合計は 74人です。▼ は、前の段から最も減っている所。棒は飾りで、同じ数字が左の列にあります。</p>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div>
+      <table>
+        <caption>持って帰った理由ごとの再訪率（1人が複数の理由を持つことがあります）</caption>
+        <thead><tr><th scope="col">持って帰った理由</th><th scope="col" class="n">人数</th><th scope="col" class="n">再訪率</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">盤の途中</th><td class="n">231</td><td class="n">22%</td></tr>
+          <tr><th scope="row">次に行く予定</th><td class="n">148</td><td class="n">26%</td></tr>
+          <tr><th scope="row">次に来た日から使えるクーポン</th><td class="n">119</td><td class="n">24%</td></tr>
+          <tr><th scope="row">どれも無い</th><td class="n">149</td><td class="n">10%</td></tr>
+        </tbody>
+      </table>
+      <p class="small">持って帰った人ほど戻っている、という関係です。原因とは言い切れません。</p>
+    </div>
+    <div>
+      <table>
+        <caption>再訪しなかった人が最後にいたマス（338人）</caption>
+        <thead><tr><th scope="col">マス</th><th scope="col" class="n">人数</th><th scope="col" class="barcell"><span class="small">棒</span></th></tr></thead>
+        <tbody>
+          <tr><th scope="row">0〜9</th><td class="n">41</td><td><span class="bar" style="width:42%"></span></td></tr>
+          <tr><th scope="row">10〜19</th><td class="n">66</td><td><span class="bar" style="width:67%"></span></td></tr>
+          <tr><th scope="row">20〜29 <span class="chip c-rej">多い</span></th><td class="n">98</td><td><span class="bar hi" style="width:100%"></span></td></tr>
+          <tr><th scope="row">30〜39</th><td class="n">72</td><td><span class="bar" style="width:73%"></span></td></tr>
+          <tr><th scope="row">40〜49</th><td class="n">61</td><td><span class="bar" style="width:62%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SC-A04 -->
+<section class="scr" id="a04" data-role="assoc" aria-labelledby="a04-h">
+  <h1 id="a04-h"><span class="idtag">SC-A04</span>困りごと</h1>
+  <p class="lead">参加後アンケート（287人）の要望を、8つの困りごとに分けました。打ち手を選ぶと「施策の記録」に残せます。</p>
+  <form class="filters" aria-label="絞り込み"><div class="f"><label for="f-age4">年代</label><select id="f-age4"><option>すべて</option><option>10代</option><option>20代</option><option>30代</option><option>40代</option><option>50代</option><option>60代以上</option></select></div></form>
+  <table>
+    <caption>困りごとの件数（出典: 08_アンケート回答_参加後.csv、データ調査.md §2.4）</caption>
+    <thead><tr><th scope="col">困りごと</th><th scope="col" class="n">件数</th><th scope="col" class="barcell"><span class="small">棒</span></th><th scope="col">打ち手の候補</th><th scope="col"><span class="small">操作</span></th></tr></thead>
+    <tbody>
+      <tr><th scope="row">移動の不安（交通・案内・休憩・距離・段差）</th><td class="n">95</td><td><span class="bar hi" style="width:100%"></span></td><td>段差少なめのコース、休憩所の数</td><td><a class="btn sub" href="#a09" aria-label="移動の不安の施策を記録">施策に記録</a></td></tr>
+      <tr><th scope="row">操作と特典の受け取り方</th><td class="n">26</td><td><span class="bar" style="width:27%"></span></td><td>クーポンに使い方・お店・期限、初回の案内</td><td><a class="btn sub" href="#a09" aria-label="操作と特典の受け取り方の施策を記録">施策に記録</a></td></tr>
+      <tr><th scope="row">周辺のお店の情報</th><td class="n">20</td><td><span class="bar" style="width:21%"></span></td><td>「近くのお店」、店の特典マス</td><td><a class="btn sub" href="#a09" aria-label="周辺のお店の情報の施策を記録">施策に記録</a></td></tr>
+      <tr><th scope="row">特典・景品の魅力</th><td class="n">19</td><td><span class="bar" style="width:20%"></span></td><td>季節の1品を替える</td><td><a class="btn sub" href="#a09" aria-label="特典・景品の魅力の施策を記録">施策に記録</a></td></tr>
+      <tr><th scope="row">スタンプ収集が単調</th><td class="n">11</td><td><span class="bar" style="width:12%"></span></td><td>2枚目の季節マスを替える</td><td><a class="btn sub" href="#a09" aria-label="スタンプ収集が単調の施策を記録">施策に記録</a></td></tr>
+      <tr><th scope="row">スポットの説明</th><td class="n">10</td><td><span class="bar" style="width:11%"></span></td><td>架空のスポットの説明を厚く</td><td><a class="btn sub" href="#a09" aria-label="スポットの説明の施策を記録">施策に記録</a></td></tr>
+      <tr><th scope="row">混雑</th><td class="n">5</td><td><span class="bar" style="width:5%"></span></td><td>うわさの「空いている時間帯」</td><td><a class="btn sub" href="#a09" aria-label="混雑の施策を記録">施策に記録</a></td></tr>
+      <tr><th scope="row">その他（分類の表に無い文）</th><td class="n">0</td><td></td><td>取込のときに文を確かめて分類の表へ足す</td><td></td></tr>
+      <tr><th scope="row">要望なし（好意的・また来たい）</th><td class="n">101</td><td><span class="small">困りごとではないため棒は出さない</span></td><td>―</td><td></td></tr>
+    </tbody>
+  </table>
+  <p class="small">この表は CSV 全体（2026-10-01〜10-20）の数字で、上の帯の期間には関係しません。要望の文そのものは出しません。</p>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div>
+      <table>
+        <caption>満足度と2周目（満足しても戻らない）</caption>
+        <thead><tr><th scope="col">満足度</th><th scope="col" class="n">2周目に進んだ人 ／ 回答</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">大変満足</th><td class="n">20 ／ 74（27%）</td></tr>
+          <tr><th scope="row">普通</th><td class="n">20 ／ 54（37%）</td></tr>
+          <tr><th scope="row">大変不満</th><td class="n">4 ／ 16（25%）</td></tr>
+        </tbody>
+      </table>
+      <p class="small">出典: データ調査.md §2.4。やや満足・やや不満の行は、取込を作るときに CSV から出します。</p>
+    </div>
+    <div>
+      <table>
+        <caption>旅で良かった点（287人）</caption>
+        <thead><tr><th scope="col">良かった点</th><th scope="col" class="n">人数</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">旅先の交流</th><td class="n">69</td></tr>
+          <tr><th scope="row">景観・名所</th><td class="n">65</td></tr>
+          <tr><th scope="row">スタンプ収集</th><td class="n">55</td></tr>
+          <tr><th scope="row">特になし</th><td class="n">50</td></tr>
+          <tr><th scope="row">特典・景品</th><td class="n">48</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SC-A05 -->
+<section class="scr" id="a05" data-role="assoc" aria-labelledby="a05-h">
+  <h1 id="a05-h"><span class="idtag">SC-A05</span>スポット</h1>
+  <p class="lead">スポットごとの QR・段差少なめの人の割合と、時間帯の混み方を見ます（見本の数字）。</p>
+  <table>
+    <caption>スポットごとの集計</caption>
+    <thead><tr><th scope="col">スポット</th><th scope="col" class="n">QR</th><th scope="col" class="n">段差少なめの人</th><th scope="col" class="n">既存 CSV の件数</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">名古屋城</th><td class="n">186</td><td class="n">31%</td><td class="n">380</td></tr>
+      <tr><th scope="row">鶴舞公園</th><td class="n">142</td><td class="n">28%</td><td class="n">374</td></tr>
+      <tr><th scope="row">名古屋港水族館</th><td class="n">121</td><td class="n">25%</td><td class="n">382</td></tr>
+      <tr><th scope="row">みなと夏まつり広場</th><td class="n">38</td><td class="n hide">5人未満</td><td class="n">―</td></tr>
+      <tr><th scope="row">東山動植物園</th><td class="n">97</td><td class="n">9%</td><td class="n">365</td></tr>
+      <tr><th scope="row">名古屋市博物館</th><td class="n">64</td><td class="n">22%</td><td class="n">371</td></tr>
+      <tr><th scope="row">名古屋市科学館</th><td class="n">110</td><td class="n">26%</td><td class="n">378</td></tr>
+      <tr><th scope="row">大須 冬あかり横丁</th><td class="n">73</td><td class="n">11%</td><td class="n">379</td></tr>
+    </tbody>
+  </table>
+  <p class="small">「5人未満」は、人が推測されないように数字を出しません。既存 CSV の件数は、データ設計.md §2.1 の対応表で割り当てたスポットの件数です。</p>
+
+  <h2>名古屋城の時間帯と曜日（QR の件数）</h2>
+  <form class="filters" aria-label="スポットを選ぶ"><div class="f"><label for="f-sp5">スポット</label><select id="f-sp5"><option>名古屋城</option><option>鶴舞公園</option><option>名古屋港水族館</option><option>みなと夏まつり広場</option><option>東山動植物園</option><option>名古屋市博物館</option><option>名古屋市科学館</option><option>大須 冬あかり横丁</option></select></div></form>
+  <table class="heat">
+    <caption>色の濃さは件数の多さ（数字を併記）。9〜17時だけ。5未満は数字を出しません</caption>
+    <thead><tr><th scope="col">曜日</th><th scope="col">9時</th><th scope="col">10時</th><th scope="col">11時</th><th scope="col">12時</th><th scope="col">13時</th><th scope="col">14時</th><th scope="col">15時</th><th scope="col">16時</th><th scope="col">17時</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">月</th><td class="l0">5未満</td><td class="l1">6</td><td class="l1">9</td><td class="l1">6</td><td class="l1">9</td><td class="l2">12</td><td class="l2">15</td><td class="l1">9</td><td class="l0">5未満</td></tr>
+      <tr><th scope="row">火</th><td class="l0">5未満</td><td class="l1">6</td><td class="l1">6</td><td class="l1">6</td><td class="l1">6</td><td class="l1">9</td><td class="l2">12</td><td class="l1">6</td><td class="l0">5未満</td></tr>
+      <tr><th scope="row">水</th><td class="l0">5未満</td><td class="l1">6</td><td class="l1">9</td><td class="l1">9</td><td class="l2">12</td><td class="l2">12</td><td class="l2">15</td><td class="l1">9</td><td class="l0">5未満</td></tr>
+      <tr><th scope="row">木</th><td class="l1">6</td><td class="l1">9</td><td class="l2">12</td><td class="l2">12</td><td class="l2">15</td><td class="l3">18</td><td class="l3">21</td><td class="l2">12</td><td class="l1">6</td></tr>
+      <tr><th scope="row">金</th><td class="l1">6</td><td class="l1">9</td><td class="l2">12</td><td class="l2">15</td><td class="l2">15</td><td class="l3">18</td><td class="l3">21</td><td class="l2">15</td><td class="l1">6</td></tr>
+      <tr><th scope="row">土</th><td class="l1">9</td><td class="l2">15</td><td class="l3">21</td><td class="l3">24</td><td class="l3">24</td><td class="l4">30</td><td class="l4">33</td><td class="l3">21</td><td class="l1">9</td></tr>
+      <tr><th scope="row">日</th><td class="l1">9</td><td class="l2">15</td><td class="l3">18</td><td class="l3">21</td><td class="l3">24</td><td class="l4">27</td><td class="l3">24</td><td class="l2">15</td><td class="l1">6</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SC-A07 -->
+<section class="scr" id="a07" data-role="assoc" aria-labelledby="a07-h">
+  <h1 id="a07-h"><span class="idtag">SC-A07</span>設定（盤・特典・ボーナス）</h1>
+  <p class="lead">変えた値は「適用する日」から使います。すでに配ったクーポンは変わりません。</p>
+  <form class="card" aria-labelledby="a07-h">
+    <div class="fields">
+      <div class="f"><label for="s-rd">再訪とみなす日数</label><input id="s-rd" type="number" min="3" max="60" value="7" inputmode="numeric" aria-describedby="s-rd-h"><p class="hint" id="s-rd-h">3〜60日（今: 7日）</p></div>
+      <div class="f"><label for="s-rb">再訪ボーナスのさいころ</label><input id="s-rb" type="number" min="1" max="5" value="2" aria-describedby="s-rb-h"><p class="hint" id="s-rb-h">1〜5回（今: 2回）</p></div>
+      <div class="f"><label for="s-ld">次回クーポンが使えるまで</label><input id="s-ld" type="number" min="1" max="30" value="5" aria-describedby="s-ld-h"><p class="hint" id="s-ld-h">1〜30日（今: 7日）</p></div>
+      <div class="f"><label for="s-ex">クーポンの期限</label><input id="s-ex" type="number" min="7" max="180" value="60" aria-describedby="s-ex-h"><p class="hint" id="s-ex-h">7〜180日（今: 60日）</p></div>
+      <div class="f"><label for="s-th">店の特典マスを作れる人数</label><input id="s-th" type="number" min="5" max="100" value="10" aria-describedby="s-th-h"><p class="hint" id="s-th-h">5〜100人（今: 10人）</p></div>
+      <div class="f"><label for="s-ef">適用する日</label><input id="s-ef" type="date" value="2026-11-10" aria-describedby="s-ef-h"><p class="hint" id="s-ef-h">明日以降</p></div>
+    </div>
+    <h3>🎁マスのクーポンの並び（1枚目。見るだけ）</h3>
+    <p class="small">souv10 → kishimen → season → lantern → tempura → minikatsu → season → postcard → …（データ設計.md §2.3）</p>
+    <div class="actions"><button type="button" class="btn">変更を保存</button><button type="button" class="btn sub">元に戻す</button></div>
+  </form>
+  <div class="card" role="dialog" aria-modal="false" aria-labelledby="a07-dlg" style="margin-top:14px;max-width:560px;border:2px solid var(--main)">
+    <span class="small">保存の前の確認（見本）</span>
+    <h3 id="a07-dlg" style="margin-top:0">この内容で保存しますか？</h3>
+    <table><thead><tr><th scope="col">項目</th><th scope="col">前</th><th scope="col">後</th></tr></thead>
+      <tbody><tr><th scope="row">次回クーポンが使えるまで</th><td>7日</td><td>5日</td></tr></tbody></table>
+    <p class="small">2026-11-10 から使います。すでに配ったクーポンは変わりません。</p>
+    <div class="actions"><button type="button" class="btn">保存する</button><button type="button" class="btn sub">やめる</button></div>
+  </div>
+  <div class="status ng" role="alert" style="margin-top:10px">入力の誤りの見本: 「再訪とみなす日数」は 3〜60 の数で入れてください。</div>
+  <h2>変更の記録</h2>
+  <table>
+    <caption>設定の変更の記録</caption>
+    <thead><tr><th scope="col">日時</th><th scope="col">項目</th><th scope="col">前</th><th scope="col">後</th><th scope="col">適用する日</th><th scope="col">役割</th></tr></thead>
+    <tbody>
+      <tr><td>2026-11-02 10:15</td><td>次回クーポンが使えるまで</td><td>10日</td><td>7日</td><td>2026-11-03</td><td>観光協会</td></tr>
+      <tr><td>2026-10-28 16:40</td><td>店の特典マスを作れる人数</td><td>15人</td><td>10人</td><td>2026-10-29</td><td>観光協会</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SC-A08 -->
+<section class="scr" id="a08" data-role="assoc" aria-labelledby="a08-h">
+  <h1 id="a08-h"><span class="idtag">SC-A08</span>スポットの公開と季節</h1>
+  <p class="lead">休業・工事中のスポットを非公開にしたり、季節のイベントの期間を決めます。</p>
+  <table>
+    <thead><tr><th scope="col">スポット</th><th scope="col">公開</th><th scope="col">季節のイベント</th><th scope="col">期間</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">名古屋城</th><td><label class="chk"><input type="checkbox" checked>公開</label></td><td>お堀の夜桜あかり（春）</td><td>03/20〜04/10</td></tr>
+      <tr><th scope="row">東山動植物園</th><td><label class="chk"><input type="checkbox">公開</label> <span class="chip c-wait">工事のため非公開中</span></td><td>もみじの植物園まつり（秋）</td><td>11/01〜11/30</td></tr>
+      <tr><th scope="row">名古屋市科学館</th><td><label class="chk"><input type="checkbox" checked>公開</label></td><td>冬の星空さんぽ（冬）</td><td>12/01〜02/28</td></tr>
+      <tr><th scope="row">大須 冬あかり横丁</th><td><label class="chk"><input type="checkbox" checked>公開</label></td><td>冬あかり横丁（冬）</td><td>12/10〜01/15</td></tr>
+      <tr><th scope="row">鶴舞公園</th><td><label class="chk"><input type="checkbox" checked>公開</label></td><td>つるまの桜ピクニック（春）</td><td>03/25〜04/15</td></tr>
+      <tr><th scope="row">名古屋港水族館</th><td><label class="chk"><input type="checkbox" checked>公開</label></td><td>夏の夜の水族館（夏）</td><td>07/15〜08/31</td></tr>
+      <tr><th scope="row">みなと夏まつり広場</th><td><label class="chk"><input type="checkbox" checked>公開</label></td><td>港の夏まつり（夏）</td><td>08/01〜08/20</td></tr>
+      <tr><th scope="row">名古屋市博物館</th><td><label class="chk"><input type="checkbox" checked>公開</label></td><td>むかしの道具たんけん（秋）</td><td>10/01〜11/30</td></tr>
+    </tbody>
+  </table>
+  <h3>東山動植物園を変える（行を選んだときの見本）</h3>
+  <div class="card fields">
+    <div class="f"><label for="sp-rs">非公開にする理由</label><select id="sp-rs"><option selected>工事</option><option>休業</option><option>そのほか</option></select></div>
+    <div class="f"><label for="sp-fr">イベントの始まり（月日）</label><input id="sp-fr" type="text" inputmode="numeric" value="11/01" aria-describedby="sp-h"></div>
+    <div class="f"><label for="sp-to">イベントの終わり（月日）</label><input id="sp-to" type="text" inputmode="numeric" value="11/30" aria-describedby="sp-h"><p class="hint" id="sp-h">年をまたいでよい。1〜120日</p></div>
+  </div>
+  <div class="actions"><button type="button" class="btn">保存</button></div>
+  <p class="small">非公開にしても、すでに利用者が持っている「次に行く予定」は消しません。</p>
+</section>
+
+<!-- SC-A09 -->
+<section class="scr" id="a09" data-role="assoc" aria-labelledby="a09-h">
+  <h1 id="a09-h"><span class="idtag">SC-A09</span>施策の記録と効果</h1>
+  <p class="lead">行った施策を日付つきで残し、前後28日の数字を並べます。</p>
+  <form class="card" aria-label="施策を記録する">
+    <div class="fields">
+      <div class="f"><label for="ac-d">実施した日</label><input id="ac-d" type="date" value="2026-11-09"></div>
+      <div class="f"><label for="ac-c">困りごとの分類</label><select id="ac-c"><option>移動の不安</option><option>操作と特典の受け取り方</option><option>周辺のお店の情報</option><option>特典・景品の魅力</option><option>スタンプ収集が単調</option><option>スポットの説明</option><option>混雑</option></select></div>
+      <div class="f" style="grid-column:1/-1"><label for="ac-t">内容（1〜100字）</label><input id="ac-t" type="text" maxlength="100" value="名古屋城と鶴舞公園の間に案内標識を3か所足した"><p class="hint">名前や連絡先は書かないでください</p></div>
+    </div>
+    <div class="actions"><button type="button" class="btn">記録する</button></div>
+  </form>
+  <h2>記録した施策</h2>
+  <table>
+    <caption>前後28日の比較（見本の数字。関係であり原因とは限りません）</caption>
+    <thead><tr><th scope="col">日</th><th scope="col">施策</th><th scope="col" class="n">再訪率 前→後</th><th scope="col" class="n">次の理由 前→後</th><th scope="col" class="n">段差少なめの人の再訪率</th></tr></thead>
+    <tbody>
+      <tr><td>2026-10-12</td><td>段差少なめのコース「お城と公園さんぽ」に休憩所の数を表示（移動の不安）</td><td class="n">14.8% → 18.0% <span class="up">▲</span></td><td class="n">66% → 64% <span class="down">▼</span></td><td class="n">12% → 21% <span class="up">▲</span></td></tr>
+      <tr><td>2026-10-20</td><td>季節の1品を秋の栗きんとんに替えた（特典の魅力）</td><td class="n">― <em class="ref">28日たっていません</em></td><td class="n">―</td><td class="n">―</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SC-A10 -->
+<section class="scr" id="a10" data-role="shop" aria-labelledby="a10-h">
+  <h1 id="a10-h"><span class="idtag">SC-A10</span>店舗ダッシュボード（あかり堂）</h1>
+  <p class="lead">自分の店のクーポンと QR だけを表示します。ほかの店の数字は見えません（見本の数字）。</p>
+  <div class="card status ng" role="status" style="margin-bottom:14px">近くの名古屋市科学館で、次回の予定が増えています（14人）。<a href="#a13">特典マスを作る</a></div>
+  <div class="card status wa" role="status" style="margin-bottom:14px">未確認のお客さまの声が3件あります。<a href="#a15">声を見る</a></div>
+  <div class="grid g5">
+    <div class="card kpi"><div class="nm">配ったクーポン<button type="button" class="defbtn" aria-label="配ったクーポンの定義">定義</button></div><div class="v">128枚</div><div class="d up">▲ 12枚</div></div>
+    <div class="card kpi"><div class="nm">使われた<button type="button" class="defbtn" aria-label="使われたクーポンの定義">定義</button></div><div class="v">61枚</div><div class="d">48%</div></div>
+    <div class="card kpi"><div class="nm">まだ使えない<button type="button" class="defbtn" aria-label="まだ使えないクーポンの定義">定義</button></div><div class="v">7枚</div><div class="d">特典マスのクーポン（翌日から）</div></div>
+    <div class="card kpi"><div class="nm">再訪の日に使った人<button type="button" class="defbtn" aria-label="再訪の日に使った人の定義">定義</button></div><div class="v">23人</div><div class="d up">▲ 5人</div></div>
+    <div class="card kpi"><div class="nm">期限切れ<button type="button" class="defbtn" aria-label="期限切れの定義">定義</button></div><div class="v">9枚</div><div class="d">7%</div></div>
+    <div class="card kpi"><div class="nm">お店の QR（レジ横）<button type="button" class="defbtn" aria-label="お店の QR の定義">定義</button></div><div class="v">88回</div><div class="d up">▲ 9回</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:18px">
+    <table>
+      <caption>クーポンが使われた時間帯</caption>
+      <thead><tr><th scope="col">時間</th><th scope="col" class="n">枚数</th><th scope="col" class="barcell"><span class="small">棒</span></th></tr></thead>
+      <tbody>
+        <tr><th scope="row">10〜12時</th><td class="n">9</td><td><span class="bar" style="width:39%"></span></td></tr>
+        <tr><th scope="row">12〜14時</th><td class="n">14</td><td><span class="bar" style="width:61%"></span></td></tr>
+        <tr><th scope="row">14〜16時</th><td class="n">23</td><td><span class="bar" style="width:100%"></span></td></tr>
+        <tr><th scope="row">16〜18時</th><td class="n">15</td><td><span class="bar" style="width:65%"></span></td></tr>
+      </tbody>
+    </table>
+    <table>
+      <caption>同じ日に寄ったスポット（使った人）</caption>
+      <thead><tr><th scope="col">スポット</th><th scope="col" class="n">人数</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">名古屋城</th><td class="n">24</td></tr>
+        <tr><th scope="row">名古屋市科学館</th><td class="n">17</td></tr>
+        <tr><th scope="row">大須 冬あかり横丁</th><td class="n">8</td></tr>
+        <tr><th scope="row">そのほか</th><td class="n hide">5人未満</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h2>店の特典マスの効果</h2>
+  <table>
+    <thead><tr><th scope="col">キャンペーン</th><th scope="col" class="n">対象</th><th scope="col" class="n">置いたマス</th><th scope="col" class="n">止まった</th><th scope="col" class="n">使った</th><th scope="col" class="n">再訪の日に使った</th></tr></thead>
+    <tbody><tr><th scope="row">科学館帰りの星空しおり <span class="chip c-act">実施中</span></th><td class="n">21人</td><td class="n">18</td><td class="n">7 <em class="ref">参考</em></td><td class="n hide">5人未満</td><td class="n hide">5人未満</td></tr></tbody>
+  </table>
+  <p class="small">エリア全体（3店の合計）: 配ったクーポン 402枚・使われた 197枚。</p>
+</section>
+
+<!-- SC-A15 -->
+<section class="scr" id="a15" data-role="shop" aria-labelledby="a15-h">
+  <h1 id="a15-h"><span class="idtag">SC-A15</span>お客さまの声（あかり堂）</h1>
+  <p class="lead">あかり堂で書かれた「ひとこと」のうち、お店の人に見えると知らせたものだけを表示します。名前や ID は出ません（見本の声。ダミーです）。</p>
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="card kpi"><div class="nm">声の数</div><div class="v">5件</div><div class="d">この期間</div></div>
+    <div class="card kpi"><div class="nm">未確認</div><div class="v">3件</div><div class="d">確認すると、ここから減ります</div></div>
+    <div class="card kpi"><div class="nm">確認済み</div><div class="v">2件</div><div class="d">― </div></div>
+  </div>
+  <form class="filters" aria-label="声の絞り込み">
+    <div class="f"><label for="v-show">表示する声</label><select id="v-show"><option>すべて</option><option>未確認だけ</option><option>確認済みだけ</option></select></div>
+  </form>
+  <ul class="voices" aria-label="お客さまの声の一覧" style="list-style:none;margin:0;padding:0;display:grid;gap:12px;max-width:820px">
+    <li class="card"><p style="margin:0;font-weight:700">和紙のしおり、かわいかったです。また来たいです。</p><p class="small" style="margin:4px 0 8px">11/08 ・ 20代 <span class="chip c-wait">未確認</span></p><button type="button" class="btn sub" aria-label="11/08 20代の声を確認した">確認した</button></li>
+    <li class="card"><p style="margin:0;font-weight:700">ちょうちん教室が楽しかった。子どもが夢中でした。</p><p class="small" style="margin:4px 0 8px">11/08 ・ 30代 <span class="chip c-wait">未確認</span></p><button type="button" class="btn sub" aria-label="11/08 30代の声を確認した">確認した</button></li>
+    <li class="card"><p style="margin:0;font-weight:700">お店の場所が少し分かりにくかったです。</p><p class="small" style="margin:4px 0 8px">11/07 ・ 40代 <span class="chip c-wait">未確認</span></p><button type="button" class="btn sub" aria-label="11/07 40代の声を確認した">確認した</button></li>
+    <li class="card"><p style="margin:0;font-weight:700">ポストカードの種類がもっとほしいです。</p><p class="small" style="margin:4px 0 8px">11/05 ・ 50代 <span class="chip c-act">確認済み ✓</span></p></li>
+    <li class="card"><p style="margin:0;font-weight:700">また来ます。（伏せました）まで連絡ください。</p><p class="small" style="margin:4px 0 8px">11/04 ・ 20代 <span class="chip c-act">確認済み ✓</span> <span class="chip c-rej">電話番号などを伏せました</span></p></li>
+  </ul>
+  <p class="small" style="max-width:820px;margin-top:14px">声は、このお店で書かれた「ひとこと」だけです。電話番号・メール・URL は自動で伏せます。書いた人の名前・ID・一緒に来た人は出しません。ほかの店の声は見えません。「確認した」は、あなたの店の中だけの目印で、書いた人には伝わりません。</p>
+</section>
+<!-- SC-A11 -->
+<section class="scr" id="a11" data-role="shop" aria-labelledby="a11-h">
+  <h1 id="a11-h"><span class="idtag">SC-A11</span>自店のクーポン（あかり堂）</h1>
+  <p class="lead">品切れのときは一時停止できます。止めている間、🎁マスには別のクーポンが出ます。</p>
+  <table>
+    <thead><tr><th scope="col">クーポン</th><th scope="col">状態</th><th scope="col">一時停止</th><th scope="col">1日の上限</th><th scope="col" class="n">今日配った</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">お土産 10%オフ</th><td><span class="chip c-act">配っています</span></td><td><label class="chk"><input type="checkbox">止める</label></td><td><div class="f"><label class="lb" for="lim1">上限（枚）</label><input id="lim1" type="number" min="0" max="999" placeholder="なし"></div></td><td class="n">6</td></tr>
+      <tr><th scope="row">ちょうちん教室 100円引き</th><td><span class="chip c-end">止めています</span></td><td><label class="chk"><input type="checkbox" checked>止める</label></td><td><div class="f"><label class="lb" for="lim2">上限（枚）</label><input id="lim2" type="number" min="0" max="999" value="10"></div></td><td class="n">0</td></tr>
+      <tr><th scope="row">あかり堂 ポストカード1枚</th><td><span class="chip c-act">配っています</span></td><td><label class="chk"><input type="checkbox">止める</label></td><td><div class="f"><label class="lb" for="lim3">上限（枚）</label><input id="lim3" type="number" min="0" max="999" value="30"></div></td><td class="n">12</td></tr>
+    </tbody>
+  </table>
+  <div class="actions"><button type="button" class="btn">保存</button></div>
+  <p class="small">配ったクーポンは止めても使えます。店の特典マスのクーポンは「近くの予定と特典マス」で管理します。</p>
+</section>
+
+<!-- SC-A12 -->
+<section class="scr" id="a12" data-role="assoc" aria-labelledby="a12-h">
+  <h1 id="a12-h"><span class="idtag">SC-A12</span>データの状態</h1>
+  <p class="lead">CSV の取込の結果です。元の CSV は読むだけで、書き換えません。</p>
+  <table>
+    <caption>最後の取込: 2026-11-09 14:52（見本）</caption>
+    <thead><tr><th scope="col">ファイル</th><th scope="col" class="n">読んだ行</th><th scope="col" class="n">取り込んだ</th><th scope="col" class="n">除いた</th><th scope="col">除いた理由</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">13_ユーザー一覧.csv</th><td class="n">500</td><td class="n">500</td><td class="n">0</td><td>―</td></tr>
+      <tr><th scope="row">12_スタンプ獲得履歴.csv</th><td class="n">2,629</td><td class="n">2,629</td><td class="n">0</td><td>―</td></tr>
+      <tr><th scope="row">18_特典獲得履歴.csv</th><td class="n">584</td><td class="n">584</td><td class="n">0</td><td>―</td></tr>
+      <tr><th scope="row">08_アンケート回答_参加後.csv</th><td class="n">287</td><td class="n">―</td><td class="n">―</td><td><span class="chip c-wait">取込を追加する予定</span></td></tr>
+      <tr><th scope="row">09_アンケート回答_登録時.csv</th><td class="n">500</td><td class="n">―</td><td class="n">―</td><td><span class="chip c-wait">取込を追加する予定</span></td></tr>
+    </tbody>
+  </table>
+  <h2>食い違い</h2>
+  <table>
+    <thead><tr><th scope="col">検査</th><th scope="col" class="n">合わない人</th><th scope="col">扱い</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">13 のスタンプ獲得数と 12 の件数</th><td class="n">0人</td><td>―</td></tr>
+      <tr><th scope="row">13 の特典獲得数と 18 の件数</th><td class="n">227人</td><td>履歴（18）を正にし、13 の集計列は使わない（データ調査.md §3）</td></tr>
+    </tbody>
+  </table>
+  <p class="small">件数は データ調査.md §1・§1.2 の実測。取り込む列は ID・年代・日時などだけで、名前・メール・LINE ID は取り込みません。</p>
+</section>
+
+<!-- SC-A13 -->
+<section class="scr" id="a13" data-role="shop" aria-labelledby="a13-h">
+  <h1 id="a13-h"><span class="idtag">SC-A13</span>近くの予定と特典マス（あかり堂）</h1>
+  <p class="lead">近くのスポットに「次に行く予定」を入れている人が多いとき、自分の店のイベントやクーポンを、その人たちのすごろくに特典マスとして出せます。</p>
+
+  <h2>近くのスポットの次回の予定（店から 2.5km 以内）</h2>
+  <table>
+    <caption>予定の人数（見本の数字。5人未満は数字を出しません。人の ID は出しません）</caption>
+    <thead><tr><th scope="col">スポット</th><th scope="col" class="n">距離</th><th scope="col" class="n">予定の人数</th><th scope="col">季節</th><th scope="col">時間帯</th><th scope="col">前の週から</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">名古屋市科学館 <span class="chip c-up">増えています</span></th><td class="n">1.52km</td><td class="n">14人</td><td>冬 12人 ／ ほか 5人未満</td><td>夕方 8人 ／ ほか 5人未満</td><td class="up">▲ 6人</td></tr>
+      <tr><th scope="row">大須 冬あかり横丁</th><td class="n">2.08km</td><td class="n">9人</td><td>冬 7人 ／ ほか 5人未満</td><td>夜 6人 ／ ほか 5人未満</td><td>▲ 1人</td></tr>
+      <tr><th scope="row">名古屋城</th><td class="n">2.21km</td><td class="n hide">5人未満</td><td class="hide">―</td><td class="hide">―</td><td>―</td></tr>
+    </tbody>
+  </table>
+
+  <h2>イベント・クーポンを作る</h2>
+  <form class="card" aria-label="特典マスを作る">
+    <div class="fields">
+      <div class="f"><span class="lb" id="k-l">種類</span>
+        <div role="radiogroup" aria-labelledby="k-l"><label class="chk"><input type="radio" name="k">クーポン</label><label class="chk"><input type="radio" name="k" checked>イベント（参加でもらえる特典つき）</label></div></div>
+      <div class="f"><span class="lb" id="shop-l">使えるお店</span><p id="shop-v" aria-labelledby="shop-l" style="margin:0;min-height:44px;display:flex;align-items:center;font-weight:800">🏪 あかり堂（自分の店だけ）</p><p class="hint">クーポンを使えるのは自分の店だけです。ほかの店は選べません</p></div>
+      <fieldset class="f" style="border:0;padding:0;margin:0"><legend class="lb">だれの盤に出すか（対象のスポット）</legend>
+        <label class="chk"><input type="checkbox" checked>名古屋市科学館（14人）</label>
+        <label class="chk"><input type="checkbox" checked>大須 冬あかり横丁（9人）</label>
+        <label class="chk"><input type="checkbox">名古屋城（5人未満）</label></fieldset>
+      <div class="f"><label for="c-se">対象の季節</label><select id="c-se"><option>冬（いちばん多い）</option><option>春</option><option>夏</option><option>秋</option></select></div>
+    </div>
+    <div class="status ok" role="status" aria-live="polite" style="margin:12px 0">対象は 19人です。作れます（10人以上で作れます）。</div>
+    <p class="small">足りないときの表示の例:「対象は 7人です。あと 3人で作れます」。対象が5人未満のときは「あと5人以上で作れます」とだけ出します。5人未満のスポットを含めたときは、合計を「23人以上」のように出し、差し引きで人数が分からないようにします。</p>
+    <p class="small">DEMO_MODE のときは、表と人数に「ダミーを含む」と出します。</p>
+    <div class="fields">
+      <div class="f"><label for="c-ti">名前（1〜20字）</label><input id="c-ti" type="text" maxlength="20" value="冬あかり ちょうちん教室"></div>
+      <div class="f" style="grid-column:span 2"><label for="c-bo">内容（1〜60字）</label><input id="c-bo" type="text" maxlength="60" value="科学館や横丁の帰りに、小さなちょうちんを作ろう。参加で和紙のしおりつき"><p class="hint">URL・メール・電話番号・ほかの店の名前は書けません</p></div>
+      <div class="f"><label for="c-ed">イベントの日</label><input id="c-ed" type="date" value="2026-12-12"></div>
+      <div class="f"><label for="c-et">時間</label><select id="c-et"><option>15:00〜18:00</option><option>10:00〜12:00</option></select><p class="hint">9〜21時のあいだ</p></div>
+      <div class="f"><label for="c-bk">特典（自分の店で渡せるもの）</label><select id="c-bk"><option selected>1品を無料・サービス（例: コーヒー1杯、アイス）</option><option>○円引き（例: 100円引き）</option><option>○%引き（5〜50%）</option></select></div>
+      <div class="f"><label for="c-bv">引く金額・割合</label><input id="c-bv" type="number" min="5" max="1000" disabled aria-describedby="c-bv-h"><p class="hint" id="c-bv-h">○円引きは 50〜1,000（円）、○%引きは 5〜50（%）。1品を無料・サービスのときは使わない</p></div>
+      <div class="f"><label for="c-it">無料・サービスする品（1〜20字）</label><input id="c-it" type="text" maxlength="20" value="和紙のしおり" aria-describedby="c-it-h"><p class="hint" id="c-it-h">自分の店で渡せる品だけ。例: コーヒー1杯、アイス</p></div>
+      <div class="f"><label for="c-st">始まる日</label><input id="c-st" type="date" value="2026-12-01"><p class="hint">明日以降</p></div>
+      <div class="f"><label for="c-en">終わる日</label><input id="c-en" type="date" value="2026-12-31"><p class="hint">7〜90日</p></div>
+      <div class="f"><label for="c-mx">配る枚数の上限</label><input id="c-mx" type="number" min="1" max="500" value="50"><p class="hint">1〜500枚、1人1枚</p></div>
+    </div>
+    <p class="small">作れる特典の例（旅行者には店名といっしょにこう出ます）: 「コーヒー1杯 無料」「100円引き」「アイス サービス」。自分の店で渡せるものだけ作れます。</p>
+
+    <h3>プレビュー（旅行者のすごろくでの見え方）</h3>
+    <div class="strip" aria-label="盤の一部の見本">
+      <div class="sq me"><span class="ic" aria-hidden="true">🐱</span>21 いまここ</div>
+      <div class="sq">22</div>
+      <div class="sq">23</div>
+      <div class="sq gift"><span class="ic" aria-hidden="true">🎁</span>24</div>
+      <div class="sq">25</div>
+      <div class="sq shop"><span class="ic" aria-hidden="true">🏪</span>26 あかり堂</div>
+      <div class="sq">27</div>
+    </div>
+    <p class="small">いまの位置の3〜10マス先の、ふつうのマスに置きます（🎁などは置き換えません。1枚の盤に3つまで）。</p>
+    <div class="ticket" style="margin-top:10px"><span class="ic" aria-hidden="true">🏪</span><div><span class="chip c-up">お店のイベント</span><b>冬あかり ちょうちん教室</b><span class="small">使えるお店: あかり堂のみ・12/12 15:00〜18:00・和紙のしおり 無料<br>止まった翌日から 12/31 まで使えます</span></div></div>
+
+    <div class="actions"><button type="button" class="btn">確認に送る</button><button type="button" class="btn sub">下書きに保存</button></div>
+    <p class="small">観光協会が確認してから、始まる日に盤に出ます。同時に出せるのは、確認待ちと実施中を合わせて2つまでです。</p>
+  </form>
+
+  <h2>作ったキャンペーンと効果</h2>
+  <table>
+    <caption>効果は 5人未満を数字で出しません。30人未満は「参考」</caption>
+    <thead><tr><th scope="col">名前</th><th scope="col">状態</th><th scope="col">期間</th><th scope="col" class="n">対象</th><th scope="col" class="n">置いたマス</th><th scope="col" class="n">止まった ＝ 配った ／ 上限</th><th scope="col" class="n">使った</th><th scope="col"><span class="small">操作</span></th></tr></thead>
+    <tbody>
+      <tr><th scope="row">科学館帰りの星空しおり</th><td><span class="chip c-act">実施中</span></td><td>11/01〜11/30</td><td class="n">21人</td><td class="n">18</td><td class="n">7 ／ 50 <em class="ref">参考</em></td><td class="n hide">5人未満</td><td><button type="button" class="btn warn">途中で止める</button></td></tr>
+      <tr><th scope="row">冬あかり ちょうちん教室</th><td><span class="chip c-wait">確認待ち</span></td><td>12/01〜12/31</td><td class="n">19人</td><td class="n">―</td><td class="n">― ／ 50</td><td class="n">―</td><td></td></tr>
+      <tr><th scope="row">冬の星座ポストカード</th><td><span class="chip c-end">下書き</span></td><td>12/05〜01/05</td><td class="n">―</td><td class="n">―</td><td class="n">― ／ 30</td><td class="n">―</td><td><button type="button" class="btn sub">続きを書く</button></td></tr>
+      <tr><th scope="row">秋のもみじ便せん</th><td><span class="chip c-rej">差し戻し</span></td><td>10/20〜11/10</td><td class="n">―</td><td class="n">―</td><td class="n">―</td><td class="n">―</td><td><span class="small">理由: 電話番号が書かれていました</span> <button type="button" class="btn sub">直して作り直す</button></td></tr>
+    </tbody>
+  </table>
+  <p class="small">状態は 下書き → 確認待ち → 承認済み → 実施中 → 終了。ほかに 差し戻し・止めた。止めた後も、配ったクーポンは期限まで使えます。</p>
+</section>
+
+<!-- SC-A14 -->
+<section class="scr" id="a14" data-role="assoc" aria-labelledby="a14-h">
+  <h1 id="a14-h"><span class="idtag">SC-A14</span>店の特典マスの確認</h1>
+  <p class="lead">店が作ったイベント・クーポンは、旅行者全員の盤に出る前にここで確かめます。</p>
+  <div class="grid g2">
+    <article class="card" aria-labelledby="rv1">
+      <h2 id="rv1" style="margin-top:0">冬あかり ちょうちん教室 <span class="chip c-wait">確認待ち</span></h2>
+      <dl class="kv">
+        <dt>店</dt><dd>あかり堂</dd>
+        <dt>使えるお店</dt><dd>あかり堂のみ（ほかの店の名前・使える店の指定は含まれていません）</dd>
+        <dt>種類</dt><dd>イベント（参加で和紙のしおり 無料）</dd>
+        <dt>内容</dt><dd>科学館や横丁の帰りに、小さなちょうちんを作ろう。参加で和紙のしおりつき</dd>
+        <dt>対象</dt><dd>名古屋市科学館・大須 冬あかり横丁に冬の予定がある人（19人）</dd>
+        <dt>期間</dt><dd>12/01〜12/31（イベントは 12/12 15:00〜18:00）</dd>
+        <dt>上限</dt><dd>50枚</dd>
+      </dl>
+      <div class="status wa" role="note" style="margin-top:12px">大須 冬あかり横丁では、12月に実施中のキャンペーンがほかに2つあります（合わせて3つ）。盤が店のマスばかりにならないか確かめてください。</div>
+      <div class="f" style="margin-top:12px"><label for="rv-note">差し戻すときの理由（1〜100字）</label><textarea id="rv-note" maxlength="100"></textarea></div>
+      <div class="actions"><button type="button" class="btn">承認する</button><button type="button" class="btn warn">差し戻す</button></div>
+    </article>
+    <div>
+      <h3 style="margin-top:0">盤とクーポンの見え方</h3>
+      <div class="strip"><div class="sq">25</div><div class="sq shop"><span class="ic" aria-hidden="true">🏪</span>26 あかり堂</div><div class="sq">27</div></div>
+      <div class="ticket" style="margin-top:10px"><span class="ic" aria-hidden="true">🏪</span><div><span class="chip c-up">お店のイベント</span><b>冬あかり ちょうちん教室</b><span class="small">使えるお店: あかり堂のみ・止まった翌日から 12/31 まで</span></div></div>
+    </div>
+  </div>
+  <h2>確認の記録</h2>
+  <table>
+    <thead><tr><th scope="col">日時</th><th scope="col">店</th><th scope="col">キャンペーン</th><th scope="col">結果</th><th scope="col">理由</th></tr></thead>
+    <tbody>
+      <tr><td>2026-11-06 18:30</td><td>きしめん ひだまり</td><td>港帰りの天ぷら1品</td><td><span class="chip c-end">店が止めました</span></td><td>品切れ</td></tr>
+      <tr><td>2026-10-30 11:02</td><td>あかり堂</td><td>科学館帰りの星空しおり</td><td><span class="chip c-act">承認</span></td><td>―</td></tr>
+      <tr><td>2026-10-18 15:20</td><td>あかり堂</td><td>秋のもみじ便せん</td><td><span class="chip c-rej">差し戻し</span></td><td>電話番号が書かれていました</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 利用者アプリへの追加（参考） -->
+<section class="scr" id="user-add" data-role="ref" aria-labelledby="ua-h">
+  <h1 id="ua-h">利用者アプリへの追加（参考）</h1>
+  <p class="lead">店の特典マスのために、利用者アプリへ足す部分の見本です。採用が決まったら、利用者アプリの正（index.html）と SC-01・SC-04・SC-05・SC-07・SC-09 の設計へ入れます。</p>
+  <div class="phones">
+    <div class="phone">
+      <h3>SC-09 予言カード</h3>
+      <div class="card"><b>次は冬の夕方、名古屋市科学館が気に入るはず</b><p class="small" style="margin:4px 0 0">理由: 行った場所と似ている（強い）／ 次の季節のイベント（中くらい）</p></div>
+      <button type="button" class="pbtn">次に行く予定に入れる</button>
+      <p class="small">お店には人数だけが伝わります。予定は3つまで。</p>
+      <h3>次に行く予定（2 ／ 3）</h3>
+      <ul class="small" style="padding-left:1.2em;margin:0">
+        <li>名古屋市科学館（冬） <button type="button" class="btn sub" style="min-height:44px;padding:0 10px;font-size:.8rem">取り消す</button></li>
+        <li>大須 冬あかり横丁（冬） <button type="button" class="btn sub" style="min-height:44px;padding:0 10px;font-size:.8rem">取り消す</button></li>
+      </ul>
+      <h3>SC-04 スポット詳細</h3>
+      <div class="f"><label for="ua-se">いつ行く？</label><select id="ua-se"><option>冬（次の季節）</option><option>春</option><option>夏</option><option>秋</option></select></div>
+      <button type="button" class="pbtn sub">次に行く予定に入れる</button>
+      <p class="small">お店（あかり堂・きしめん ひだまり など）は予定に入れられません。</p>
+    </div>
+    <div class="phone">
+      <h3>SC-05 すごろく（盤の一部）</h3>
+      <div class="strip"><div class="sq me"><span class="ic" aria-hidden="true">🐱</span>21</div><div class="sq">22</div><div class="sq gift"><span class="ic" aria-hidden="true">🎁</span>24</div><div class="sq shop"><span class="ic" aria-hidden="true">🏪</span>26 あかり堂</div></div>
+      <p class="small">盤の説明（文字）: いまは21マス目。次の🎁まで3マス、次のお店の特典まで5マス。</p>
+      <div class="notice" role="status">あかり堂の特典マスに止まった！「冬あかり ちょうちん教室」のクーポンをもらったよ。明日から使えるよ。</div>
+      <p class="small">配り終わったとき: 「配布は終わりました」。期間が終わったマスは「終了」。</p>
+    </div>
+    <div class="phone">
+      <h3>SC-01 ホーム（その日に1回だけ）</h3>
+      <div class="notice">🏪 近くのお店から特典マスが届きました。すごろくの26マス目を見てね。</div>
+      <button type="button" class="pbtn sub">すごろくを見る</button>
+      <h3>SC-07 特典</h3>
+      <div class="ticket"><span class="ic" aria-hidden="true">🏪</span><div><span class="chip c-up">お店のイベント</span><b>冬あかり ちょうちん教室</b><span class="small">和紙のしおり 無料・12/31 まで<br>使えるお店: あかり堂のみ</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 共通の状態の見本（参考） -->
+<section class="scr" id="states" data-role="ref" aria-labelledby="st-h">
+  <h1 id="st-h">共通の状態の見本（参考）</h1>
+  <p class="lead">どの運営画面でも、同じ形で出します。各画面の設計書の「状態」の節は、この見本を使います。</p>
+  <div class="grid g2">
+    <div class="card"><h2 style="margin-top:0">読み込み中</h2><div role="status" aria-live="polite"><div style="height:16px;border-radius:8px;background:#ECE6DA;margin:8px 0"></div><div style="height:16px;width:70%;border-radius:8px;background:#ECE6DA;margin:8px 0"></div><p class="small">読み込み中…</p></div></div>
+    <div class="card"><h2 style="margin-top:0">空（数えるものが無い）</h2><p>この期間には、まだ記録がありません。</p><p class="small">期間を長くすると見られることがあります。</p><div class="actions"><button type="button" class="btn sub">直近90日にする</button></div></div>
+    <div class="card"><h2 style="margin-top:0">エラー</h2><div class="status wa" role="alert">うまく読み込めませんでした。少し待って、もう一度ためしてください。</div><div class="actions"><button type="button" class="btn">もう一度</button></div><p class="small">スタック・パス・SQL は出さない（ADR-013）。</p></div>
+    <div class="card"><h2 style="margin-top:0">見られない（役割が違う・ADMIN_MODE なし）</h2><p>このページは見つかりません。</p><div class="actions"><a class="btn sub" href="#a01">役割を選びなおす</a></div><p class="small">サーバーはふつうの 404 と同じ応答を返す（他店のページも同じ）。</p></div>
+    <div class="card"><h2 style="margin-top:0">送信中（二重送信しない）</h2><button type="button" class="btn" aria-disabled="true">保存しています…</button><p class="small">押した時に requestId を作り、応答が来るまで押せない（ADR-006）。</p></div>
+    <div class="card"><h2 style="margin-top:0">ネットが切れたとき</h2><p>運営画面は地図を出さず、同じ PC のサーバーだけを使うので、そのまま使えます。「オフライン表示中」は出しません。</p></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var roleOf = { a01:'none', a10:'shop', a11:'shop', a13:'shop', a15:'shop', 'user-add':'ref', states:'ref' };
+  var usesPeriod = { a02:true, a03:true, a05:true, a10:true };
+  function show(){
+    var id = (location.hash || '#a01').slice(1);
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scr')) { id = 'a01'; target = document.getElementById('a01'); }
+    var secs = document.querySelectorAll('section.scr');
+    for (var i = 0; i < secs.length; i++) secs[i].classList.toggle('on', secs[i] === target);
+    var role = roleOf[id] || 'assoc';
+    document.getElementById('nav-assoc').hidden = role !== 'assoc';
+    document.getElementById('nav-shop').hidden = role !== 'shop';
+    document.getElementById('periodBox').hidden = !usesPeriod[id];
+    var chip = document.getElementById('roleChip');
+    chip.textContent = role === 'assoc' ? '観光協会' : role === 'shop' ? '店舗: あかり堂' : role === 'ref' ? '参考' : '役割をえらんでください';
+    chip.classList.toggle('shop', role === 'shop');
+    var links = document.querySelectorAll('.side a');
+    for (var j = 0; j < links.length; j++) {
+      if (links[j].getAttribute('href') === '#' + id) links[j].setAttribute('aria-current', 'page');
+      else links[j].removeAttribute('aria-current');
+    }
+    var h = target.querySelector('h1');
+    if (h && document.activeElement && document.activeElement !== document.body) { h.setAttribute('tabindex', '-1'); h.focus(); }
+  }
+  var sf = document.getElementById('shopForm');
+  sf.addEventListener('submit', function(e){
+    e.preventDefault();
+    var pick = document.getElementById('shop-pick'), err = document.getElementById('shop-err');
+    if (!pick.value) { err.hidden = false; pick.setAttribute('aria-invalid', 'true'); pick.focus(); return; }
+    err.hidden = true; pick.removeAttribute('aria-invalid');
+    location.hash = '#a10';
+  });
+  document.getElementById('shop-pick').addEventListener('change', function(){ document.getElementById('shop-err').hidden = true; this.removeAttribute('aria-invalid'); });
+  window.addEventListener('hashchange', show);
+  show();
+})();
+</script>
+</body>
+</html>

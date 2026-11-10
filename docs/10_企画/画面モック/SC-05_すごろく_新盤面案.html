@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-05 すごろく 新盤面案（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし）。SC-05 の盤面の新案: 左上スタート→ジグザグ→右下ゴール（名古屋城）、45マス（特典マス 9 = 1/5）、さいころは盤の上に画面いっぱいで約4.8秒かけて転がり、ゆっくり止まる。設計は docs/20_設計/画面設計/SC-05_すごろく.md §12 -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#DDEEF3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.page{max-width:900px;margin:0 auto;padding:20px;display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;justify-content:center}
+.side{flex:1 1 260px;max-width:340px;background:#fff;border-radius:20px;padding:16px 18px;box-shadow:var(--sh)}
+.side .ttl{font-size:1.25rem;font-weight:800;color:var(--ink);margin:0 0 6px;line-height:1.4}
+.side h2{font-size:1rem;margin:14px 0 6px}
+.side p,.side li{font-size:.9rem;margin:0 0 6px;color:var(--ink2)}
+.side ul{padding-left:1.2em;margin:0}
+.tools{display:flex;flex-direction:column;gap:8px}
+.tools button,.tools select{min-height:44px;border:2px solid var(--main);background:#fff;border-radius:12px;padding:0 12px;font-weight:700}
+.tools label{display:flex;align-items:center;gap:8px;min-height:44px;font-weight:700}
+
+/* 画面（スマホ）。幅430px以下では画面いっぱい */
+.screen{position:relative;width:390px;height:844px;overflow:hidden;background:var(--bg);border-radius:36px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+@media (max-width:430px){.page{padding:0;gap:0}.screen{order:-1;width:100vw;height:100dvh;border-radius:0;box-shadow:none}.side{max-width:none;border-radius:0}}
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.top{padding:12px 16px 8px;background:#fff;box-shadow:0 2px 10px rgba(90,64,24,.10);z-index:2}
+.top .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.top h1{font-size:1.2rem;margin:0;line-height:1.3}
+.chip{display:inline-block;border-radius:999px;padding:1px 12px;font-size:.9rem;font-weight:800;background:var(--accent);color:var(--accent-ink)}
+.top .goal{font-weight:800;margin:4px 0 0;line-height:1.4}
+.top .sub{font-size:.88rem;color:var(--ink2);margin:0;line-height:1.4}
+.bar{height:10px;border-radius:999px;background:var(--main-l);overflow:hidden;margin:6px 0 0}
+.bar span{display:block;height:100%;width:0;background:var(--main);border-radius:999px;transition:width .4s}
+.boardwrap{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;background:#EAF7E0}
+.boardwrap svg{display:block;width:100%;height:auto}
+.dock{padding:10px 14px 14px;background:#fff;box-shadow:0 -2px 10px rgba(90,64,24,.10);z-index:2}
+.say{display:flex;gap:10px;align-items:flex-end}
+.say img{flex:none;width:52px;height:52px;border-radius:16px;background:var(--accent-l)}
+.say .tx{flex:1;margin:0;background:var(--accent-l);border-radius:18px 18px 18px 6px;padding:8px 12px;font-weight:700;font-size:.95rem;line-height:1.45}
+.act{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:8px;border-radius:14px;background:#fff;border:2px solid var(--main);color:var(--main-d);font-weight:800;text-decoration:none}
+.act[hidden]{display:none}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:58px;margin-top:10px;border:0;border-radius:18px;font-weight:800;font-size:1.05rem;background:var(--main);color:#fff;box-shadow:0 6px 0 var(--main-d)}
+.btn[aria-disabled="true"]{background:#9BB9B5;box-shadow:0 6px 0 #7E9A96;cursor:default}
+
+/* 盤の中 */
+.cell rect{fill:#FFF9EC;stroke:#C8A468;stroke-width:3}
+.cell text{font-family:inherit;font-weight:800;text-anchor:middle;fill:#7A5A2A}
+.cell .n{font-size:21px}
+.cell .tn{font-size:11px;text-anchor:start}
+.cell .lb{font-size:11px}
+.cell.gift rect{fill:#F4B43A;stroke:#C98A12}.cell.gift text{fill:#3B2A00}.cell.gift{color:#3B2A00}
+.cell.spot rect{fill:#fff;stroke:#0E7C74}.cell.spot text{fill:#09594F}.cell.spot{color:#0E7C74}
+.cell.start rect,.cell.goal rect{fill:#0E7C74;stroke:#09594F}.cell.start text,.cell.goal text{fill:#fff}.cell.start,.cell.goal{color:#fff}
+.cell.now rect{stroke:#E0457B;stroke-width:5}
+#piece{transition:transform .28s linear}
+.pulse{fill:none;stroke:#E0457B;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+
+/* さいころ（盤の上に画面いっぱい） */
+.ov{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.35),rgba(30,86,120,.86));opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+.ov.open{opacity:1;visibility:visible;transition:opacity .3s}
+.plate{background:#09594F;color:#fff;border-radius:999px;padding:6px 20px;font-weight:800;font-size:1.15rem;text-align:center;min-height:44px;display:flex;align-items:center}
+.stage{position:relative;width:100%;height:330px}
+.floor{position:absolute;left:8%;right:8%;bottom:18px;height:92px;border-radius:50%;background:rgba(255,248,238,.92);border:4px solid #C8A468;box-shadow:inset 0 6px 14px rgba(120,80,20,.18)}
+.roller{position:absolute;left:50%;bottom:44px;width:0;height:0}
+.shadow{position:absolute;left:-62px;bottom:-14px;width:124px;height:26px;border-radius:50%;background:rgba(60,40,10,.42)}
+.hop{position:absolute;left:-75px;bottom:0;width:150px;height:150px}
+.scene{width:150px;height:150px;perspective:900px}
+.cube{position:relative;width:150px;height:150px;transform-style:preserve-3d}
+.face{position:absolute;left:0;top:0;width:150px;height:150px;background:#fff;border:5px solid var(--ink);border-radius:30px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:18px;backface-visibility:hidden}
+.face i{width:28px;height:28px;border-radius:50%;place-self:center}
+.face i.on{background:var(--ink)}
+.f1 i.on{background:#D2402A;width:38px;height:38px}
+.f1{transform:rotateY(0deg) translateZ(75px)}.f6{transform:rotateY(180deg) translateZ(75px)}
+.f3{transform:rotateY(90deg) translateZ(75px)}.f4{transform:rotateY(-90deg) translateZ(75px)}
+.f2{transform:rotateX(90deg) translateZ(75px)}.f5{transform:rotateX(-90deg) translateZ(75px)}
+.scene.landed{filter:drop-shadow(0 0 18px rgba(255,214,107,.95))}
+.skip{min-height:48px;min-width:140px;border:0;border-radius:16px;background:#fff;color:var(--main-d);font-weight:800;font-size:1.05rem;padding:0 20px;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+.conf{position:absolute;top:-12px;width:10px;height:14px;border-radius:3px;z-index:30;pointer-events:none;animation:fall 1.9s ease-in forwards}
+@keyframes fall{to{transform:translateY(860px) rotate(540deg);opacity:.9}}
+.reduce .pulse,.reduce .conf{animation:none}
+.reduce .conf{display:none}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}.conf{display:none}.ov,.bar span,#piece{transition-duration:.01s}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ic-gift" viewBox="0 0 24 24"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="ic-castle" viewBox="0 0 24 24"><path d="M4 21h16M6 21v-8h12v8M8 13V9h8v4M10 9V6h4v3M9 6l3-3 3 3M11 21v-3h2v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-station" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v10h14V10M9 20v-5h6v5M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="dc-tree" viewBox="0 0 20 24"><rect x="8.5" y="15" width="3" height="8" rx="1" fill="#9C7A4E"/><circle cx="10" cy="10" r="8" fill="#8FCB86"/><circle cx="7" cy="8" r="3" fill="#B4DAA6"/></symbol>
+  <symbol id="dc-house" viewBox="0 0 26 22"><path d="M2 11L13 2l11 9" fill="#E59A7E"/><rect x="5" y="10" width="16" height="11" rx="2" fill="#FFE9D2" stroke="#D9B48E" stroke-width="1.2"/><rect x="11" y="14" width="4" height="7" fill="#C98A5E"/></symbol>
+  <symbol id="dc-flower" viewBox="0 0 12 12"><circle cx="6" cy="3" r="2.4" fill="#F7A8B8"/><circle cx="9" cy="6" r="2.4" fill="#F7A8B8"/><circle cx="6" cy="9" r="2.4" fill="#F7A8B8"/><circle cx="3" cy="6" r="2.4" fill="#F7A8B8"/><circle cx="6" cy="6" r="1.8" fill="#F4B43A"/></symbol>
+  <symbol id="dc-cloud" viewBox="0 0 60 26"><path d="M14 24a10 10 0 0 1 0-20a14 14 0 0 1 26-2a12 12 0 0 1 8 22z" fill="#fff" stroke="#E6EEF0" stroke-width="1.5"/></symbol>
+</svg>
+
+<div class="page">
+  <aside class="side">
+    <p class="ttl">SC-05 すごろく 新盤面案（モック）</p>
+    <p>左上のスタートからジグザグに進み、<strong>右下のゴール（名古屋城）</strong>を目指す盤。<strong>45マスのうち特典マスは 9（ちょうど 1/5）</strong>。</p>
+    <ul>
+      <li>「さいころを振る」を押すと、盤の上に<strong>画面いっぱい</strong>のさいころ。右から転がって、約4.8秒かけてゆっくり止まる。</li>
+      <li>止まったら少し待って（「すすむ」で先へ）、駒が1マスずつ進む。</li>
+      <li>目は見本の順（4,3,5,2,6,1）。本番はサーバーが決める（ADR-007）。</li>
+    </ul>
+    <h2>見本の操作（本番には無い）</h2>
+    <div class="tools">
+      <button type="button" id="t-goal">ゴール3マス手前に置く</button>
+      <button type="button" id="t-reset">最初から</button>
+      <button type="button" id="t-rolls">さいころを 3回に戻す</button>
+      <label for="t-face">次の目</label>
+      <select id="t-face"><option value="">見本の順</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+      <label><input type="checkbox" id="t-reduce"> 動きを減らす（見本）</label>
+    </div>
+  </aside>
+
+  <div class="screen" id="screen">
+    <div class="app" id="app">
+      <header class="top">
+        <div class="r1"><h1>すごろく</h1><span class="chip" id="left">さいころ あと 3回</span></div>
+        <p class="goal" id="goal">ゴールまで あと 44 マス</p>
+        <p class="sub" id="bt">スタートにいます。次の特典まで あと 4 マス。</p>
+        <div class="bar" aria-hidden="true"><span id="barfill"></span></div>
+      </header>
+      <div class="boardwrap" id="scroller" tabindex="0" role="region" aria-label="すごろくの盤（縦にスクロール）">
+        <svg id="board" viewBox="0 0 360 1190" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BDE6FA"/><stop offset="1" stop-color="#EAF7E8"/></linearGradient>
+            <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C6E8AC"/><stop offset="1" stop-color="#A9D78F"/></linearGradient>
+          </defs>
+          <rect width="360" height="1190" fill="#EAF7E0"/>
+          <rect width="360" height="470" fill="url(#sky)"/>
+          <circle cx="314" cy="34" r="18" fill="#FFD66B"/>
+          <path d="M314 8v-4M314 60v-4M288 34h-4M344 34h-4M296 16l-3-3M332 16l3-3M296 52l-3 3M332 52l3 3" stroke="#FFD66B" stroke-width="2.5" stroke-linecap="round"/>
+          <g fill="none" stroke-width="8" opacity=".6">
+            <path d="M30 400A150 150 0 0 1 330 400" stroke="#FF9AA2"/><path d="M38 400A142 142 0 0 1 322 400" stroke="#FFC48C"/>
+            <path d="M46 400A134 134 0 0 1 314 400" stroke="#FFE69A"/><path d="M54 400A126 126 0 0 1 306 400" stroke="#B8E6A8"/>
+            <path d="M62 400A118 118 0 0 1 298 400" stroke="#9ED8F5"/><path d="M70 400A110 110 0 0 1 290 400" stroke="#C3B1F0"/>
+          </g>
+          <use href="#dc-cloud" x="120" y="14" width="64" height="28"/><use href="#dc-cloud" x="200" y="44" width="44" height="19"/>
+          <use href="#dc-cloud" x="20" y="420" width="56" height="24"/><use href="#dc-cloud" x="250" y="330" width="48" height="21"/>
+          <path d="M0 470C60 450 120 480 180 464S300 450 360 470V1190H0Z" fill="#DDF1C8"/>
+          <path d="M0 760C70 744 140 772 210 758S320 744 360 760V1190H0Z" fill="#D2EBBA"/>
+          <path d="M0 540C50 528 100 552 160 542S270 530 360 544V566C300 576 240 560 180 568S60 576 0 562Z" fill="#BFE0EA"/>
+          <ellipse cx="120" cy="545" rx="9" ry="2.6" fill="#fff" opacity=".7"/>
+          <path d="M0 1040C70 990 150 1030 220 990S330 980 360 1020V1190H0Z" fill="url(#hill)"/>
+          <path d="M0 1110C90 1080 200 1110 360 1085V1190H0Z" fill="#9BCF82"/>
+          <g id="deco">
+            <use href="#dc-tree" x="104" y="116" width="22" height="26"/><use href="#dc-tree" x="170" y="118" width="20" height="24"/><use href="#dc-house" x="226" y="118" width="26" height="22"/>
+            <use href="#dc-house" x="92" y="220" width="26" height="22"/><use href="#dc-tree" x="150" y="218" width="22" height="26"/><use href="#dc-flower" x="206" y="226" width="12" height="12"/><use href="#dc-flower" x="240" y="230" width="12" height="12"/>
+            <use href="#dc-tree" x="100" y="324" width="22" height="26"/><use href="#dc-tree" x="132" y="326" width="18" height="22"/><use href="#dc-house" x="220" y="326" width="26" height="22"/>
+            <use href="#dc-flower" x="110" y="432" width="12" height="12"/><use href="#dc-flower" x="170" y="436" width="12" height="12"/><use href="#dc-flower" x="236" y="430" width="12" height="12"/>
+            <use href="#dc-tree" x="96" y="636" width="22" height="26"/><use href="#dc-house" x="160" y="638" width="26" height="22"/><use href="#dc-tree" x="230" y="636" width="22" height="26"/>
+            <use href="#dc-tree" x="110" y="740" width="22" height="26"/><use href="#dc-tree" x="176" y="742" width="20" height="24"/><use href="#dc-flower" x="240" y="748" width="12" height="12"/>
+            <use href="#dc-house" x="100" y="846" width="26" height="22"/><use href="#dc-flower" x="170" y="852" width="12" height="12"/><use href="#dc-tree" x="226" y="842" width="22" height="26"/>
+            <use href="#dc-tree" x="24" y="1060" width="26" height="30"/><use href="#dc-tree" x="62" y="1070" width="22" height="26"/><use href="#dc-flower" x="110" y="1100" width="12" height="12"/><use href="#dc-flower" x="140" y="1110" width="12" height="12"/>
+          </g>
+          <path id="trail" d="" fill="none" stroke="#FBEFD3" stroke-width="20" stroke-linejoin="round" stroke-linecap="round"/>
+          <path id="trail2" d="" fill="none" stroke="#E2C58E" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+          <rect x="296" y="528" width="40" height="40" rx="4" fill="#E8C99A"/><path d="M296 532v32M336 532v32" stroke="#9C7A4E" stroke-width="4" stroke-linecap="round"/>
+          <!-- 名古屋城 -->
+          <g transform="translate(176 936)">
+            <title>名古屋城のイラスト</title>
+            <path d="M4 190L166 190L154 150L16 150Z" fill="#C5CCCF" stroke="#98A2A6" stroke-width="1.5"/>
+            <path d="M12 170H158M8 182H162M50 150v20M92 150v20M130 150v20M30 170v12M72 170v12M112 170v12M146 170v12" stroke="#98A2A6" stroke-width="1.2"/>
+            <rect x="10" y="126" width="40" height="24" fill="#FFFDF6" stroke="#CFC8B8" stroke-width="1.5"/>
+            <path d="M0 128Q30 120 58 128L48 110H12Z" fill="#5FAF98" stroke="#3E8470" stroke-width="1.5"/>
+            <rect x="58" y="120" width="98" height="30" fill="#FFFDF6" stroke="#CFC8B8" stroke-width="1.5"/>
+            <path d="M46 122Q107 112 168 122L152 104H62Z" fill="#5FAF98" stroke="#3E8470" stroke-width="1.5"/>
+            <rect x="68" y="90" width="78" height="14" fill="#FFFDF6" stroke="#CFC8B8" stroke-width="1.5"/>
+            <path d="M56 92Q107 84 158 92L144 76H70Z" fill="#5FAF98" stroke="#3E8470" stroke-width="1.5"/>
+            <rect x="78" y="62" width="58" height="14" fill="#FFFDF6" stroke="#CFC8B8" stroke-width="1.5"/>
+            <path d="M66 64Q107 56 148 64L136 50H78Z" fill="#5FAF98" stroke="#3E8470" stroke-width="1.5"/>
+            <rect x="88" y="38" width="38" height="12" fill="#FFFDF6" stroke="#CFC8B8" stroke-width="1.5"/>
+            <path d="M74 40Q107 32 140 40L122 20H92Z" fill="#5FAF98" stroke="#3E8470" stroke-width="1.5"/>
+            <path d="M92 20H122" stroke="#F4B43A" stroke-width="3" stroke-linecap="round"/>
+            <path d="M91 21c-7-3-9-12-4-18c0 5 3 8 8 9z" fill="#F4B43A" stroke="#C98A12" stroke-width="1"/>
+            <path d="M123 21c7-3 9-12 4-18c0 5-3 8-8 9z" fill="#F4B43A" stroke="#C98A12" stroke-width="1"/>
+            <g fill="#5B6F73"><rect x="68" y="130" width="8" height="10" rx="1"/><rect x="92" y="130" width="8" height="10" rx="1"/><rect x="116" y="130" width="8" height="10" rx="1"/><rect x="140" y="130" width="8" height="10" rx="1"/>
+              <rect x="80" y="94" width="7" height="7" rx="1"/><rect x="103" y="94" width="7" height="7" rx="1"/><rect x="126" y="94" width="7" height="7" rx="1"/>
+              <rect x="94" y="66" width="6" height="6" rx="1"/><rect x="114" y="66" width="6" height="6" rx="1"/><rect x="103" y="41" width="7" height="6" rx="1"/><rect x="26" y="134" width="8" height="10" rx="1"/></g>
+            <rect x="94" y="168" width="26" height="22" rx="4" fill="#8A6A44"/>
+          </g>
+          <g transform="translate(24 1128)"><rect width="128" height="34" rx="10" fill="#8A6A44" stroke="#5E4529" stroke-width="2"/><text x="64" y="24" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" font-family="inherit">名古屋城</text></g>
+          <g id="cells"></g>
+          <g id="piece" style="transform:translate(44px,76px)"><ellipse cx="0" cy="-22" rx="15" ry="4.5" fill="rgba(0,0,0,.22)"/><circle class="pulse" cx="0" cy="-46" r="26"/><g id="pimg"><image id="pimage" href="../アバター/tomonyan/tomonyan-happy.svg" x="-24" y="-70" width="48" height="48"/></g></g>
+        </svg>
+      </div>
+      <div class="dock">
+        <div class="say">
+          <img id="av" src="../アバター/tomonyan/tomonyan-happy.svg" alt="ともにゃん（にこにこ）" width="52" height="52">
+          <p class="tx" id="say" role="status" aria-live="polite">さいころを振って、右下の名古屋城をめざそう！</p>
+        </div>
+        <a class="act" id="act" href="SC-07_特典.html" hidden>特典を見る</a>
+        <button type="button" class="btn" id="roll">さいころを振る（あと 3 回）</button>
+      </div>
+    </div>
+
+    <div class="ov" id="ov" role="dialog" aria-modal="true" aria-label="さいころ">
+      <p class="plate" id="ovt">さいころを振っています…</p>
+      <div class="stage">
+        <div class="floor"></div>
+        <div class="roller" id="roller">
+          <div class="shadow" id="shadow"></div>
+          <div class="hop" id="hop"><div class="scene" id="scene"><div class="cube" id="cube" role="img" aria-label="さいころ"></div></div></div>
+        </div>
+      </div>
+      <p class="plate" id="ovs" aria-hidden="true">ころころ…</p>
+      <button type="button" class="skip" id="skip">とばす</button>
+      <p class="sr" id="ovlive" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  var COLS = [44, 112, 180, 248, 316], ROW0 = 76, PITCH = 104, TOTAL = 45, GOAL = 44;
+  var GIFTS = [4, 8, 13, 17, 22, 26, 31, 36, 42];          // 9/45 = 1/5（スタート・ゴールは数えない）
+  var GIFT_NAMES = ['お土産 10%オフ', 'ドリンク1杯サービス', '名物の小鉢1品', 'しおりプレゼント', 'お菓子 1個おまけ', 'トッピング1品サービス', 'お土産 5%オフ', 'コーヒー 50円引き', '名物 おまけ1つ'];
+  var SPOTS = { 2: '大須商店街', 11: '名古屋市科学館', 20: '熱田神宮', 29: '徳川園', 38: 'オアシス21' };
+  var SEQ = [4, 3, 5, 2, 6, 1];
+  var ROT = { 1: [-14, 14], 6: [-14, 194], 3: [-14, -76], 4: [-14, 104], 2: [-104, 14], 5: [76, 14] };
+  var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+  var D = 4800;
+  var $ = function (id) { return document.getElementById(id); };
+  var pos = 0, rolls = 3, busy = false, seqN = 0, timer = 0, skipped = false, rolled = false, pending = null, anims = [];
+  var AV = '../アバター/tomonyan/tomonyan-';
+
+  function reduced() { return $('t-reduce').checked || window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  function xy(i) { var r = Math.floor(i / 5), c = i % 5; return { x: COLS[r % 2 === 0 ? c : 4 - c], y: ROW0 + r * PITCH }; }
+  function kind(i) { return i === 0 ? 'start' : i === GOAL ? 'goal' : GIFTS.indexOf(i) >= 0 ? 'gift' : SPOTS[i] ? 'spot' : 'normal'; }
+  function el(name, attrs, text) {
+    var e = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (text !== undefined) { e.textContent = text; }
+    return e;
+  }
+  function icon(id, x, y, s) { var u = el('use', { href: '#' + id, x: x, y: y, width: s, height: s }); return u; }
+  function nextGift(from) { for (var i = from + 1; i < GOAL; i++) { if (GIFTS.indexOf(i) >= 0) { return i; } } return GOAL; }
+
+  var cells = [];
+  function build() {
+    var d = '', layer = $('cells');
+    for (var i = 0; i < TOTAL; i++) {
+      var p = xy(i), k = kind(i), big = k === 'goal', s = big ? 64 : 56, h = s / 2;
+      d += (i === 0 ? 'M' : 'L') + p.x + ',' + p.y + ' ';
+      var g = el('g', { 'class': 'cell ' + k, transform: 'translate(' + (p.x - h) + ' ' + (p.y - h) + ')' });
+      g.appendChild(el('rect', { width: s, height: s, rx: 16 }));
+      if (k === 'normal') { g.appendChild(el('text', { 'class': 'n', x: h, y: 37 }, String(i))); }
+      if (k === 'gift' || k === 'spot') {
+        g.appendChild(el('text', { 'class': 'tn', x: 7, y: 15 }, String(i)));
+        g.appendChild(icon(k === 'gift' ? 'ic-gift' : 'ic-pin', 16, 9, 24));
+        g.appendChild(el('text', { 'class': 'lb', x: h, y: 48 }, k === 'gift' ? '特典' : 'スポット'));
+      }
+      if (k === 'start') { g.appendChild(icon('ic-station', 16, 8, 24)); g.appendChild(el('text', { 'class': 'lb', x: h, y: 47 }, 'スタート')); }
+      if (k === 'goal') { g.appendChild(icon('ic-castle', 18, 8, 28)); g.appendChild(el('text', { 'class': 'lb', x: h, y: 53 }, 'ゴール')); }
+      layer.appendChild(g); cells.push(g);
+    }
+    // 道（行ごとに左右へ、端で次の段へ下りる）
+    var t = '';
+    for (var r = 0; r < 9; r++) {
+      var a = r % 2 === 0 ? COLS[0] : COLS[4], b = r % 2 === 0 ? COLS[4] : COLS[0], y = ROW0 + r * PITCH;
+      t += (r === 0 ? 'M' : 'L') + a + ',' + y + ' L' + b + ',' + y + ' ';
+    }
+    $('trail').setAttribute('d', t); $('trail2').setAttribute('d', t);
+  }
+
+  function setPiece(i, instant) {
+    var p = xy(i), pc = $('piece');
+    if (instant) { pc.style.transition = 'none'; }
+    pc.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+    if (instant) { void pc.getBoundingClientRect(); pc.style.transition = ''; }
+    cells.forEach(function (c, n) { c.classList.toggle('now', n === i); });
+  }
+  function scrollToPiece(smooth) {
+    var sc = $('scroller'), k = $('board').getBoundingClientRect().width / 360;
+    sc.scrollTo({ top: Math.max(0, xy(pos).y * k - sc.clientHeight / 2), behavior: smooth && !reduced() ? 'smooth' : 'auto' });
+  }
+  function refresh() {
+    var ng = nextGift(pos);
+    $('goal').textContent = pos >= GOAL ? 'ゴールに着いたよ！' : 'ゴールまで あと ' + (GOAL - pos) + ' マス';
+    $('bt').textContent = (pos === 0 ? 'スタートにいます。' : 'いま ' + pos + ' マス目。') + (pos >= GOAL ? '' : (ng === GOAL ? 'ゴール前の特典はもうないよ。' : '次の特典まで あと ' + (ng - pos) + ' マス。'));
+    $('barfill').style.width = Math.round(pos / GOAL * 100) + '%';
+    $('left').textContent = 'さいころ あと ' + rolls + '回';
+    var b = $('roll');
+    b.textContent = pos >= GOAL ? 'ゴール！ 2枚目は次に来た日から' : rolls > 0 ? 'さいころを振る（あと ' + rolls + ' 回）' : 'いまは振れません';
+    if (rolls > 0 && pos < GOAL && !busy) { b.removeAttribute('aria-disabled'); } else { b.setAttribute('aria-disabled', 'true'); }
+  }
+  function say(text, face, link) {
+    $('say').textContent = text;
+    $('av').src = AV + (face === 'excited' ? 'excited' : 'happy') + '.svg';
+    $('av').alt = face === 'excited' ? 'ともにゃん（わくわく）' : 'ともにゃん（にこにこ）';
+    $('pimage').setAttribute('href', AV + (face === 'excited' ? 'excited' : 'happy') + '.svg');
+    var a = $('act');
+    if (link) { a.textContent = link.label; a.setAttribute('href', link.href); a.hidden = false; } else { a.hidden = true; }
+  }
+
+  // さいころの面
+  (function () {
+    var cube = $('cube');
+    for (var n = 1; n <= 6; n++) {
+      var f = document.createElement('div'); f.className = 'face f' + n; f.setAttribute('aria-hidden', 'true');
+      for (var q = 0; q < 9; q++) { var i = document.createElement('i'); if (PIPS[n].indexOf(q) >= 0) { i.className = 'on'; } f.appendChild(i); }
+      cube.appendChild(f);
+    }
+  })();
+  function finalT(face) { return 'rotateX(' + ROT[face][0] + 'deg) rotateY(' + ROT[face][1] + 'deg)'; }
+  function clearAnims() { anims.forEach(function (a) { a.cancel(); }); anims = []; }
+
+  function startDice(face) {
+    var cube = $('cube'), still = reduced();
+    clearAnims(); $('scene').classList.remove('landed');
+    cube.style.transform = finalT(face);
+    if (still) { return Promise.resolve(); }
+    var ease = 'cubic-bezier(.12,.62,.2,1)', O = [0, .22, .38, .52, .64, .74, .82, .9, 1], Y = [-170, 0, -62, 0, -26, 0, -9, 0, 0];
+    var rot = cube.animate([{ transform: 'rotateX(0deg) rotateY(0deg)' }, { transform: 'rotateX(' + (ROT[face][0] + 720) + 'deg) rotateY(' + (ROT[face][1] + 1080) + 'deg)' }], { duration: D, easing: ease, fill: 'both' });
+    var xr = $('roller').animate([{ transform: 'translateX(170px)' }, { transform: 'translateX(0)' }], { duration: D, easing: ease, fill: 'both' });
+    var hop = $('hop').animate(O.map(function (o, i) { return { offset: o, transform: 'translateY(' + Y[i] + 'px)', easing: i % 2 === 0 ? 'ease-in' : 'ease-out' }; }), { duration: D, fill: 'both' });
+    var sh = $('shadow').animate(O.map(function (o, i) { var hi = Y[i] < -5 ? Math.min(1, -Y[i] / 170) : 0; return { offset: o, transform: 'scale(' + (1 - hi * .55) + ')', opacity: .45 - hi * .3 }; }), { duration: D, fill: 'both' });
+    anims = [rot, xr, hop, sh];
+    return rot.finished.catch(function () {});
+  }
+
+  function openOv(face) {
+    $('app').inert = true; $('ov').classList.add('open');
+    $('ovt').textContent = 'さいころを振っています…'; $('ovs').textContent = 'ころころ…';
+    $('skip').textContent = 'とばす'; $('ovlive').textContent = 'さいころを振っています';
+    $('cube').setAttribute('aria-label', 'さいころ');
+    $('skip').focus();
+    skipped = false; rolled = false; pending = face;
+    startDice(face).then(function () { landed(face); });
+  }
+  function landed(face) {
+    if (rolled) { return; } rolled = true; clearAnims();
+    $('cube').style.transform = finalT(face); $('cube').setAttribute('aria-label', 'さいころ ' + face);
+    $('hop').style.transform = ''; $('roller').style.transform = ''; $('scene').classList.add('landed');
+    var mv = Math.min(face, GOAL - pos);
+    $('ovt').textContent = face + ' が出た！'; $('ovs').textContent = mv + ' マス進むよ';
+    $('skip').textContent = 'すすむ'; $('ovlive').textContent = face + ' が出ました。' + mv + ' マス進みます';
+    timer = window.setTimeout(function () { closeOv(face); }, skipped ? 200 : (reduced() ? 900 : 1700));
+  }
+  function closeOv(face) {
+    window.clearTimeout(timer);
+    $('ov').classList.remove('open'); $('app').inert = false; $('scene').classList.remove('landed');
+    window.setTimeout(function () { move(face); }, 250);
+  }
+
+  function move(face) {
+    var to = Math.min(pos + face, GOAL), still = reduced();
+    scrollToPiece(true);
+    (function step() {
+      if (pos >= to) { return land(face, to); }
+      pos += 1; setPiece(pos); scrollToPiece(true);
+      if (!still) { $('pimg').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-12px)' }, { transform: 'translateY(0)' }], { duration: 280 }); }
+      window.setTimeout(step, still ? 0 : 300);
+    })();
+  }
+  function land(face, to) {
+    var k = kind(to), head = face + ' が出ました。' + to + ' マス目。', ng = nextGift(to);
+    if (k === 'goal') {
+      say('ゴール！ 名古屋城に着いたよ。ゴール特典『きしめん1杯無料』（次に来た日から）。2枚目が始まるよ', 'excited', { label: '特典を見る', href: 'SC-07_特典.html' }); confetti();
+      $('scroller').scrollTo({ top: $('scroller').scrollHeight, behavior: reduced() ? 'auto' : 'smooth' });
+    } else if (k === 'gift') {
+      say(head + '特典マス！『' + GIFT_NAMES[GIFTS.indexOf(to)] + '』をもらったよ', 'excited', { label: '特典を見る', href: 'SC-07_特典.html' });
+    } else if (k === 'spot') {
+      say(head + '次は『' + SPOTS[to] + '』へ行ってみよう', 'happy', { label: '詳細を見る', href: 'SC-04_スポット詳細.html' });
+    } else if (GOAL - to <= 3) {
+      say(head + 'あと ' + (GOAL - to) + ' マスでゴール！', 'excited');
+    } else {
+      say(head + 'あと ' + (ng - to) + ' マスで特典のマスだよ！', 'happy');
+    }
+    busy = false; refresh();
+    $('roll').focus({ preventScroll: true });
+  }
+  function confetti() {
+    if (reduced()) { return; }
+    var cols = ['#F4B43A', '#0E7C74', '#E0457B', '#6FB5E6', '#8FCB86'];
+    for (var i = 0; i < 26; i++) {
+      var c = document.createElement('span'); c.className = 'conf';
+      c.style.left = (4 + Math.random() * 92) + '%'; c.style.background = cols[i % cols.length]; c.style.animationDelay = (Math.random() * .5) + 's';
+      $('screen').appendChild(c); window.setTimeout(function (n) { n.remove(); }.bind(null, c), 2800);
+    }
+  }
+
+  $('roll').addEventListener('click', function () {
+    if (busy || rolls <= 0 || pos >= GOAL) { return; }
+    var f = $('t-face').value;
+    var face = f ? Number(f) : SEQ[seqN++ % SEQ.length];
+    busy = true; rolls -= 1; refresh(); openOv(face);
+  });
+  $('skip').addEventListener('click', function () {
+    skipped = true;
+    if (!rolled) { clearAnims(); landed(pending); } else { closeOv(pending); }
+  });
+  $('ov').addEventListener('keydown', function (e) {
+    if (e.key === 'Tab') { e.preventDefault(); $('skip').focus(); }
+    if (e.key === 'Escape') { $('skip').click(); }
+  });
+  $('t-goal').addEventListener('click', function () { pos = GOAL - 3; setPiece(pos, true); say('あと 3 マスでゴール！', 'excited'); refresh(); scrollToPiece(false); });
+  $('t-reset').addEventListener('click', function () { pos = 0; rolls = 3; seqN = 0; setPiece(0, true); say('さいころを振って、右下の名古屋城をめざそう！', 'happy'); refresh(); scrollToPiece(false); });
+  $('t-rolls').addEventListener('click', function () { rolls = 3; refresh(); });
+  $('t-reduce').addEventListener('change', function () { $('screen').classList.toggle('reduce', this.checked); });
+
+  build(); setPiece(0, true); refresh();
+})();
+</script>
+</body>
+</html>

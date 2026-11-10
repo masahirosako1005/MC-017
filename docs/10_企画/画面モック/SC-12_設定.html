@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-12 設定（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし。リンクは押したときだけ開く）。見た目の正は index.html#settings（ADR-002）。右は後の指示で替わる所: ことば（日本語／English）、音声（声の選択・いまの声）、ライセンスと出典、デモ操作（DEMO_MODE=1 のときだけ）、すべての画面（WCAG 2.4.5）。設計は docs/20_設計/画面設計/SC-12_設定.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 20px 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+.set{margin-top:14px;background:var(--card);border-radius:24px;padding:16px 18px;box-shadow:var(--sh)}
+.set h2{margin:0 0 4px;font-size:1.15rem}
+.set .muted{margin-bottom:10px}
+.sub{font-weight:800;font-size:.95rem;margin:14px 0 8px}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+.seg{display:flex;gap:4px;background:var(--main-ll);border-radius:18px;padding:5px;box-shadow:inset 0 0 0 2px var(--main-l)}
+.seg button{flex:1;min-height:50px;border:0;border-radius:14px;background:transparent;font-weight:800;color:var(--main-d);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px;font-size:.92rem;line-height:1.3}
+.seg button[aria-pressed="true"]{background:var(--main);color:#fff;box-shadow:0 3px 0 var(--main-d)}
+.now{display:flex;align-items:center;gap:8px;margin-top:10px;background:var(--main-ll);border-radius:14px;padding:10px 12px;font-weight:800;color:var(--main-d)}
+dl.lic{margin:0;display:grid;grid-template-columns:5.6em 1fr;gap:8px 10px;font-size:.88rem}
+dl.lic dt{font-weight:800;color:var(--ink2)}
+dl.lic dd{margin:0}
+dl.lic a{color:var(--main-d);font-weight:800;display:inline-flex;align-items:center;min-height:44px}
+dl.lic ul{margin:0;padding-left:1.1em}
+.demo{border:3px dashed var(--accent-d);box-shadow:none;background:#FFFDF7}
+.today{margin:6px 0 0;font-weight:800;font-size:1.05rem}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.dbtn{min-height:48px;border:0;border-radius:14px;background:#fff;color:var(--main-d);font-weight:800;box-shadow:inset 0 0 0 2px var(--main-l),var(--sh)}
+.dbtn.gold{width:100%;margin-top:12px;background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 0 var(--accent-d)}
+.field{margin-top:12px}
+.field label{display:block;font-size:.88rem;font-weight:800;color:var(--ink2);margin-bottom:6px}
+.field select{width:100%;min-height:52px;border-radius:14px;border:2px solid var(--line);background:#fff;padding:0 10px;font-weight:700}
+.toast{display:inline-block;margin-top:12px;background:var(--ink);color:#fff;border-radius:999px;padding:6px 16px;font-weight:800;font-size:.86rem}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:58px;margin-top:18px;border:0;border-radius:18px;font-weight:800;font-size:1.05rem;background:var(--main);color:#fff;box-shadow:0 6px 0 var(--main-d)}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>SC-12 設定（画面モック）</h1>
+  <p>左は見た目の正（<code>index.html#settings</code>）。選ぶとすぐ変わる（保存ボタンなし）。index.html の「ひらがな」（Could）と「すごろく 遊ぶ／遊ばない」（Should）は出さない。</p>
+  <p>右は後の指示で替わる所の見本: ことば（日本語／English）、音声（読み上げの説明・声の選択・いまの声）、ライセンスと出典、デモ操作。設計: <code>docs/20_設計/画面設計/SC-12_設定.md</code></p>
+  <div class="row">
+    <figure>
+      <figcaption>index.html の設定（正）</figcaption>
+      <iframe src="index.html#settings" title="index.html の設定画面" width="390" height="844"></iframe>
+    </figure>
+    <section class="sample" aria-labelledby="s12-h">
+      <span class="tag">本番の見本（index.html と違う所）</span>
+      <p class="muted" id="s12-h">選ぶと すぐに変わります</p>
+
+      <div class="set">
+        <h2>ことば</h2>
+        <div class="seg" role="group" aria-label="ことば">
+          <button type="button" aria-pressed="true">日本語</button>
+          <button type="button" aria-pressed="false" lang="en">English</button>
+        </div>
+      </div>
+
+      <div class="set">
+        <h2>音声</h2>
+        <p class="muted">操作のあと、相棒のセリフを吹き出しと同時に読みます。吹き出しの「読み上げ」でも聞けます。</p>
+        <p class="sub">読み上げ</p>
+        <div class="seg" role="group" aria-label="読み上げ">
+          <button type="button" aria-pressed="true">あり</button>
+          <button type="button" aria-pressed="false">なし</button>
+        </div>
+        <p class="sub">声</p>
+        <div class="seg" role="group" aria-label="声">
+          <button type="button" aria-pressed="true">自動（VOICEVOX優先）</button>
+          <button type="button" aria-pressed="false">ブラウザの声</button>
+        </div>
+        <p class="now">いまの声：VOICEVOX:春日部つむぎ</p>
+        <p class="muted" style="margin-top:8px">VOICEVOX が起動していないときは、端末のブラウザの声で読みます。</p>
+        <p class="muted" style="margin-top:4px">ほかの表示の例:「いまの声：Microsoft Nanami - Japanese (Japan)」「いまの声：なし（文字だけ）」「いまの声：確かめています…」</p>
+        <p class="sub">効果音</p>
+        <div class="seg" role="group" aria-label="効果音">
+          <button type="button" aria-pressed="true">あり</button>
+          <button type="button" aria-pressed="false">なし</button>
+        </div>
+      </div>
+
+      <div class="set">
+        <h2>ライセンスと出典</h2>
+        <dl class="lic">
+          <dt>地図</dt>
+          <dd><a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener noreferrer">出典：地理院タイル</a>（淡色地図）</dd>
+          <dt>地図の部品</dt>
+          <dd>Leaflet（BSD-2-Clause）</dd>
+          <dt>声のエンジン</dt>
+          <dd>VOICEVOX ENGINE（LGPL v3）。<a href="https://github.com/VOICEVOX/voicevox_engine" target="_blank" rel="noopener noreferrer">VOICEVOX ENGINE の配布元</a>。このアプリには含めず、同じ PC で別に起動したものを使います。</dd>
+          <dt>声</dt>
+          <dd>
+            <ul>
+              <li>VOICEVOX:春日部つむぎ（ともにゃん）</li>
+              <li>VOICEVOX:満別花丸（ほしろう）</li>
+              <li>VOICEVOX:春歌ナナ（ぴっこん）</li>
+              <li>VOICEVOX:ちび式じい（とうじい）</li>
+            </ul>
+            このアプリは各キャラクターの公式とは関係ありません。
+          </dd>
+          <dt>アバターの絵</dt>
+          <dd>このアプリのための自作（SVG）</dd>
+          <dt>そのほか</dt>
+          <dd>React（MIT）など、画面で使うソフトの名前とライセンス【仮定】</dd>
+        </dl>
+      </div>
+
+      <div class="set demo">
+        <h2>デモ操作（発表用）</h2>
+        <p class="muted">DEMO_MODE のときだけ出ます。アプリの中の日付だけが変わります。</p>
+        <p class="today">アプリ内の今日: 2026-11-09（月）10時</p>
+        <div class="three">
+          <button type="button" class="dbtn">＋1日</button>
+          <button type="button" class="dbtn">＋7日</button>
+          <button type="button" class="dbtn">もとに戻す</button>
+        </div>
+        <div class="field">
+          <label for="hour">時刻</label>
+          <select id="hour">
+            <option selected>自動</option>
+            <option>9時</option><option>10時</option><option>17時</option><option>19時</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="where">いる場所</label>
+          <select id="where">
+            <option>選ばない</option>
+            <option selected>名古屋城</option>
+            <option>東山動植物園</option>
+            <option>名古屋市科学館</option>
+          </select>
+        </div>
+        <button type="button" class="dbtn gold">さいころ ＋5</button>
+        <p><span class="toast" role="status">アプリ内の今日を 11月16日 にしました</span></p>
+        <p class="muted">時刻の選択肢は本番では 自動・0時〜23時、いる場所は 選ばない・スポット11か所（見本では一部だけ）。</p>
+      </div>
+
+      <nav class="set" aria-labelledby="all-h">
+        <h2 id="all-h">すべての画面</h2>
+        <p class="muted">ここから どの画面へも移れます。</p>
+        <div class="three">
+          <button type="button" class="dbtn">ホーム</button>
+          <button type="button" class="dbtn">スポット</button>
+          <button type="button" class="dbtn">遊ぶ</button>
+          <button type="button" class="dbtn">うわさ</button>
+          <button type="button" class="dbtn">特典</button>
+          <button type="button" class="dbtn">相棒をえらぶ</button>
+          <button type="button" class="dbtn">予言と答え合わせ</button>
+        </div>
+      </nav>
+
+      <button type="button" class="btn">この設定でもどる</button>
+    </section>
+  </div>
+</div>
+</body>
+</html>

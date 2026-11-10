@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-06 うわさ（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし）。見た目の正は index.html#rumor（ADR-002）。右は index.html に無い「過去1か月の人気」「同じ年齢層」「同じ一緒に来た人」「選ぶと出ます」の見本。人数はダミー。設計は docs/20_設計/画面設計/SC-06_うわさ.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 20px 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+h2{font-size:1.15rem;margin:18px 0 8px;line-height:1.35}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+.card{background:var(--card);border-radius:24px;padding:8px 18px;box-shadow:var(--sh)}
+.rank{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;border:0;background:none;padding:6px 0;text-align:left;border-top:1px solid var(--line)}
+.rank.first{border-top:0}
+.rank .no{flex:none;width:32px;height:32px;border-radius:50%;background:var(--main-l);color:var(--main-d);display:grid;place-items:center;font-weight:800}
+.rank.first .no{background:var(--accent);color:var(--accent-ink)}
+.rank .grow{flex:1;min-width:0}
+.rank b{display:block;line-height:1.3}
+.rank .meter{height:8px;border-radius:4px;background:var(--main-l);margin-top:4px;overflow:hidden}
+.rank .meter i{display:block;height:100%;background:var(--main);border-radius:4px}
+.rank .n{flex:none;font-weight:800;font-size:.9rem;color:var(--ink2)}
+.w100{width:100%}.w78{width:78%}.w61{width:61%}.w88{width:88%}.w70{width:70%}.w52{width:52%}
+.ask{background:var(--card);border-radius:24px;padding:16px 18px;box-shadow:var(--sh)}
+.ask p{margin:0 0 4px;font-weight:700}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin-top:10px;border:0;border-radius:16px;font-weight:800;background:#fff;color:var(--main-d);box-shadow:inset 0 0 0 2px var(--main-l),var(--sh);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>SC-06 うわさ（画面モック）</h1>
+  <p>左は見た目の正（<code>index.html#rumor</code>）。右は index.html と違う所の見本: <strong>過去1か月の人気</strong>、年齢層と一緒に来た人を分けた2つのランキング、選んでいないときの<strong>「選ぶと出ます」</strong>。人数はダミーの集計の例。</p>
+  <p>設計: <code>docs/20_設計/画面設計/SC-06_うわさ.md</code></p>
+  <div class="row">
+    <figure>
+      <figcaption>index.html のうわさ（正）</figcaption>
+      <iframe src="index.html#rumor" title="index.html のうわさ画面" width="390" height="844"></iframe>
+    </figure>
+    <section class="sample" aria-labelledby="s6-h">
+      <span class="tag">本番の見本（index.html と違う所）</span>
+      <h2 id="s6-h">過去1か月の人気</h2>
+      <div class="card">
+        <button type="button" class="rank first"><span class="no">1</span><span class="grow"><b>名古屋城</b><span class="meter" aria-hidden="true"><i class="w100"></i></span></span><span class="n">128人</span></button>
+        <button type="button" class="rank"><span class="no">2</span><span class="grow"><b>名古屋港水族館</b><span class="meter" aria-hidden="true"><i class="w78"></i></span></span><span class="n">100人</span></button>
+        <button type="button" class="rank"><span class="no">3</span><span class="grow"><b>東山動植物園</b><span class="meter" aria-hidden="true"><i class="w61"></i></span></span><span class="n">78人</span></button>
+      </div>
+
+      <h2>60代以上に人気</h2>
+      <div class="card">
+        <button type="button" class="rank first"><span class="no">1</span><span class="grow"><b>名古屋市博物館</b><span class="meter" aria-hidden="true"><i class="w100"></i></span></span><span class="n">41人</span></button>
+        <button type="button" class="rank"><span class="no">2</span><span class="grow"><b>鶴舞公園</b><span class="meter" aria-hidden="true"><i class="w88"></i></span></span><span class="n">36人</span></button>
+        <button type="button" class="rank"><span class="no">3</span><span class="grow"><b>名古屋城</b><span class="meter" aria-hidden="true"><i class="w70"></i></span></span><span class="n">29人</span></button>
+      </div>
+
+      <h2>夫婦で来た人に人気</h2>
+      <div class="card">
+        <button type="button" class="rank first"><span class="no">1</span><span class="grow"><b>鶴舞公園</b><span class="meter" aria-hidden="true"><i class="w100"></i></span></span><span class="n">33人</span></button>
+        <button type="button" class="rank"><span class="no">2</span><span class="grow"><b>名古屋城</b><span class="meter" aria-hidden="true"><i class="w70"></i></span></span><span class="n">23人</span></button>
+        <button type="button" class="rank"><span class="no">3</span><span class="grow"><b>名古屋市科学館</b><span class="meter" aria-hidden="true"><i class="w52"></i></span></span><span class="n">17人</span></button>
+      </div>
+
+      <h2>一緒に来た人を選んでいないとき</h2>
+      <div class="ask">
+        <p>ホームの「はじめに選んでね」で 一緒に来た人を選ぶと出ます</p>
+        <a class="btn" href="SC-01_ホーム.html">選びに行く</a>
+      </div>
+      <p class="muted" style="margin-top:12px">行を押すとそのスポットの詳細（SC-04）。人数の棒は飾りで、人数は「n人」の文字。利用者の ID・名前は出さない。集計が0件の種類は「まだ集計がありません」。ダミーの集計です。</p>
+    </section>
+  </div>
+</div>
+</body>
+</html>

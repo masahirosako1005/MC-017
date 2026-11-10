@@ -1,0 +1,42 @@
+---
+description: セキュリティ・品質・アクセシビリティ（WCAG 2.2 AA）の必須ルールとチェックリストの扱い。HSTSは送らない。常時適用。
+alwaysApply: true
+---
+
+# セキュリティ・品質・アクセシビリティ
+
+チェックリスト（出典と確認方法つき。**結果欄は実行・確認するまで「未確認」**）:
+- `docs/00_準備/セキュリティ品質チェックリスト.md`（SEC-*, QL-*）
+- `docs/00_準備/アクセシビリティチェックリスト.md`（WCAG x.x.x, INC-*）
+
+ルールとチェックリストが食い違ったら、チェックリストの出典を読み直し、両方を直して audit.md に書く。
+
+## HTTPヘッダ（全レスポンス: API・静的・404・エラー）
+- **`Strict-Transport-Security`（HSTS）は送らない**（ユーザー指定）。Helmet は既定で HSTS を付けるため**使わない**（使うなら `strictTransportSecurity: false` を必須とし、外部リソース.md に記録）。自前ミドルウェアで付ける【仮定】。HTTPS 強制もしない（`upgrade-insecure-requests` を CSP に入れない）。
+- 付ける: CSP（`default-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data: https://cyberjapandata.gsi.go.jp; style-src 'self'; media-src blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`。`media-src blob:` は VOICEVOX の WAV 再生のため、ADR-003）、`X-Content-Type-Options: nosniff`、`Referrer-Policy: no-referrer`【仮定】、`X-Frame-Options: DENY`、`Permissions-Policy`（使わない機能を無効）、`Cross-Origin-Opener-Policy: same-origin`、`Cross-Origin-Resource-Policy: same-origin`【仮定】、`Cache-Control: no-store`（`/api/*`）。
+- 付けない: HSTS、`X-Powered-By`（`app.disable('x-powered-by')`）、`Cross-Origin-Embedder-Policy: require-corp`（地理院タイルを遮断する恐れ）、`Access-Control-Allow-Origin`、`X-XSS-Protection`（付けるなら `0`）、`Expect-CT`、`Public-Key-Pins`。
+- 404 とエラーも自前ハンドラで返し、同じヘッダを付ける。`Cannot GET` を出さない。確認は `curl.exe -sS -o NUL -D - http://127.0.0.1:3000/...`（チェックリスト V1）。
+- Leaflet と React が `style-src 'self'` で動くかは M4 で確認。緩める場合は ADR に理由を書く【仮定】。
+
+## 入力検証・SQL・XSS・エラー（OWASP）
+- 全 route で `params`/`query`/`body` を zod で検証してから使う。許可リスト方式、数値は範囲、文字列は長さ、配列は件数に上限。クエリの配列形式（`?a[]=`、同名の複数指定）で型を固定する。リクエストサイズと `Content-Type` を制限する。
+- 未知キーの拒否方法（`.strict()` か `z.strictObject`）は M3 で zod 公式を読んで決め、ADR に書く。CSV 取込・環境変数も zod で検証する。
+- SQL はプレースホルダのみ。XSS は React の通常描画と `textContent`。`innerHTML` 等は禁止（coding.mdc）。
+- エラー応答にスタック・内部パス・SQL・版を含めない。詳細はサーバーログだけ。ログに個人に見える値・秘密・本文全体を出さず、改行をエスケープする。`uncaughtException` はログして終了する。
+- `res.redirect` を使わない。サーバーは `127.0.0.1` のみ listen。
+
+## 品質（TypeScript・zod）
+- 全 tsconfig に `"strict": true` を明示し、構成要素（`noImplicitAny` 等）を `false` にしない。`any`、理由なしの `@ts-ignore`/`@ts-expect-error` を使わない。`catch` は `unknown` として扱う。
+- 追加の厳格化【仮定】: `noUncheckedIndexedAccess`、`noImplicitOverride`、`noImplicitReturns`、`noFallthroughCasesInSwitch`、`noUnusedLocals`、`noUnusedParameters`（採否は ADR）。
+- zod は 4.x。入力型は `z.infer`、クライアントとサーバーは `app/shared` のスキーマを共有（ADR-001）。
+
+## アクセシビリティ（目標: WCAG 2.2 AA）
+- 達成基準は A 31 件＋AA 24 件（4.1.1 は削除、AAA は対象外）。設計（M3）では画面設計に確認の観点を書き、実装（M4）では E2E で確認する。
+- 2.2 の新規: **隠されないフォーカス**（常時表示の「出典：地理院タイル」・下部ナビに隠さない）、**ドラッグ動作**（地図の移動に、ドラッグなしの代替）、**ターゲット 24px 以上**（本件は 44px）、一貫したヘルプ、冗長な入力、認証（認証は作らない）。
+- 地図は二次元コンテンツとして扱い、同じ内容を**一覧**でも提供する。ズーム・移動は単一のボタン操作でもできる。
+- `axe-core`・`@axe-core/playwright`（MPL-2.0）と `pa11y`（LGPL-3.0）は許可ライセンス外のため**入れない**。キーボード・拡大・コントラスト計算・色覚シミュレーション・ナレーターの手順で確認する。
+
+## チェックリストの扱い
+- 結果は「未確認 / PASS / FAIL / 対象外」。**実行・確認した直後だけ書き換え**、日時と手順を `docs/40_試験/試験結果.md` に残す。未実行・未確認を PASS と書かない。
+- 各到達点のゲート（M3 設計後、M4 実装後、M5 提出前）で、該当する時期の項目を確認し、未確認が残る場合は理由を書く。対象外にするときは根拠を要件定義か設計書に書く。
+- 手動確認（キーボード・拡大・ナレーター・色覚）は「実施した」「実施できなかった」を区別して書く。

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-09 予言と答え合わせ（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（静的・外部の読み込みなし）。index.html に予言の画面は無いので、index.html の色・角丸・部品に合わせて作った（ADR-002）。表示A（予言カード）と表示B（答え合わせ）を並べる。動き・状態・API は docs/20_設計/画面設計/SC-09_予言と答え合わせ.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --off-ink:#62625D;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+.cap{font-weight:800;font-size:.9rem;margin:0 0 10px}
+.phone{position:relative;width:390px;height:844px;background:var(--bg);border-radius:46px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 10px #2A2724,0 30px 60px rgba(60,40,10,.30)}
+.top{flex:none;display:flex;align-items:center;gap:10px;padding:14px 16px 8px 12px;min-height:76px}
+.top h1{flex:1;margin:0;font-size:1.4rem;font-weight:800;line-height:1.25}
+.ib{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:#fff;color:var(--main);display:grid;place-items:center;box-shadow:var(--sh)}
+main{flex:1;overflow-y:auto;padding:4px 20px 20px}
+.foot{flex:none;padding:10px 20px 22px;background:linear-gradient(rgba(255,248,238,0),var(--bg) 30%)}
+h2{font-size:1.12rem;margin:20px 0 8px;line-height:1.35}
+h3{font-size:.95rem;margin:12px 0 4px}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+.card{background:var(--card);border-radius:24px;padding:16px 18px;box-shadow:var(--sh);margin-top:12px}
+.bubble{display:flex;gap:10px;align-items:flex-end}
+.bubble img{flex:none;border-radius:18px;background:var(--accent-l)}
+.bubble .say{flex:1;background:#fff;border-radius:20px 20px 20px 6px;padding:12px 14px;box-shadow:var(--sh);font-weight:700}
+.bubble .say p{margin:0}
+.chipbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;margin-top:8px;border:0;border-radius:999px;background:var(--main-ll);color:var(--main-d);font-weight:800;font-size:.88rem}
+.prop{margin-top:14px;background:var(--main);color:#fff;border-radius:24px;padding:16px 18px;box-shadow:0 6px 0 var(--main-d)}
+.prop h2{margin:0 0 10px;color:#fff;font-size:1rem}
+.prop .spot{display:flex;gap:12px;align-items:center}
+.prop .spot .ic{flex:none;width:52px;height:52px;border-radius:50%;background:#fff;color:var(--main);display:grid;place-items:center}
+.prop .name{margin:0;font-size:1.4rem;font-weight:800;line-height:1.3}
+.prop .when{margin:0;color:var(--accent-l);font-weight:700}
+.prop h3{color:#fff}
+.reasons{list-style:none;margin:0;padding:0}
+.reasons li{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:7px 0;border-top:1px solid rgba(255,255,255,.25);font-size:.92rem}
+.reasons .s{font-size:.8rem;font-weight:800;color:var(--accent-l)}
+.meter{grid-column:1 / -1;height:8px;border-radius:4px;background:rgba(255,255,255,.25);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.w3{width:100%}.w2{width:66%}.w1{width:33%}
+.prop .see{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;margin-top:10px;border:0;border-radius:14px;background:#fff;color:var(--main-d);font-weight:800}
+details{margin-top:10px;background:#fff;border-radius:18px;padding:0 16px;box-shadow:var(--sh)}
+summary{min-height:48px;display:flex;align-items:center;font-weight:800;color:var(--main-d);cursor:pointer}
+details p{margin:0 0 12px;font-size:.9rem}
+.stars{margin:0;font-size:1.3rem;letter-spacing:2px;color:var(--accent-d)}
+.lv{display:flex;justify-content:space-between;align-items:center}
+.log,.others{list-style:none;margin:0;padding:0}
+.log li{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:.92rem}
+.log li:first-child{border-top:0}
+.hit{color:var(--main-d);font-weight:800}
+.mid{color:var(--off-ink);font-weight:800}
+.others li + li{margin-top:8px}
+.rowbtn{width:100%;min-height:60px;border:0;border-radius:18px;background:#fff;box-shadow:var(--sh);display:flex;align-items:center;gap:10px;padding:8px 14px;text-align:left}
+.rowbtn .tx{flex:1}
+.rowbtn b{display:block;line-height:1.3}
+.rowbtn small{color:var(--ink2);font-weight:700}
+.should{margin-top:12px;border:2px dashed var(--line);border-radius:18px;padding:10px 12px}
+.should .lbl{display:inline-block;background:#EEEDE9;color:var(--off-ink);border-radius:8px;padding:0 8px;font-size:.72rem;font-weight:800}
+.should .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:58px;border:0;border-radius:18px;font-weight:800;font-size:1.05rem}
+.btn.primary{background:var(--main);color:#fff;box-shadow:0 6px 0 var(--main-d)}
+.btn.ghost{background:#fff;color:var(--main-d);box-shadow:inset 0 0 0 2px var(--main-l),var(--sh);min-height:48px;font-size:.92rem}
+.reward{margin-top:4px;background:var(--accent-l);border-radius:24px;padding:18px;text-align:center;box-shadow:inset 0 0 0 3px var(--accent)}
+.reward h2{margin:0;color:#5A3E00}
+.reward .big{margin:4px 0;font-size:1.8rem;font-weight:800;color:var(--accent-ink)}
+.reward p{margin:0;font-weight:700;color:#5A3E00}
+.choices{display:grid;gap:10px}
+.choices .btn{background:#fff;color:var(--main-d);box-shadow:inset 0 0 0 2px var(--main-l),var(--sh)}
+.result{margin-top:14px;background:#fff;border-radius:24px;padding:16px 18px;box-shadow:inset 0 0 0 3px var(--main),var(--sh)}
+.result .big{margin:0;font-size:1.3rem;font-weight:800;color:var(--main-d)}
+.result p{margin:4px 0 0}
+.lbl2{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.72rem;font-weight:800;margin-bottom:6px}
+.side{width:390px}
+.side table{width:100%;border-collapse:collapse;font-size:.84rem;background:#fff}
+.side th,.side td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.side th{background:var(--main-ll)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ic-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="ic-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="page">
+  <h1>SC-09 予言と答え合わせ（画面モック）</h1>
+  <p>index.html に無い画面。<strong>表示A</strong>はホームの「次はどこ？」から開く予言カード、<strong>表示B</strong>は再訪の日に予言の場所で QR を読んだ後（SC-10 から自動）の答え合わせ。どちらも下のメニューは出さないサブ画面。</p>
+  <p>設計: <code>docs/20_設計/画面設計/SC-09_予言と答え合わせ.md</code>。点線の枠は Should（Must では出さない）。</p>
+  <div class="row">
+
+    <div>
+      <p class="cap">表示A 予言カード</p>
+      <div class="phone">
+        <header class="top">
+          <button type="button" class="ib" aria-label="もどる"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#ic-back"/></svg></button>
+          <h1>ともにゃんの予言</h1>
+          <button type="button" class="ib" aria-label="設定"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#ic-gear"/></svg></button>
+        </header>
+        <main>
+          <div class="bubble">
+            <img src="../アバター/tomonyan/tomonyan-excited.svg" alt="ともにゃん（わくわく）" width="60" height="60">
+            <div class="say">
+              <p>今日の旅から考えたよ。次は秋の夕方、ここがきっと気に入るはず！</p>
+              <button type="button" class="chipbtn">読み上げ</button>
+            </div>
+          </div>
+
+          <div class="prop" role="group" aria-labelledby="a-card">
+            <h2 id="a-card">次の旅の予言</h2>
+            <div class="spot">
+              <span class="ic"><svg width="26" height="26" aria-hidden="true" focusable="false"><use href="#ic-pin"/></svg></span>
+              <div><p class="name">東山動植物園</p><p class="when">次の秋（9月〜11月）の夕方</p></div>
+            </div>
+            <h3>理由（大きい順）</h3>
+            <ul class="reasons">
+              <li><span>夕方に出かけることが多い</span><span class="s">強い</span><span class="meter" aria-hidden="true"><i class="w3"></i></span></li>
+              <li><span>同じ「60代以上・夫婦」の人がよく行く</span><span class="s">中くらい</span><span class="meter" aria-hidden="true"><i class="w2"></i></span></li>
+              <li><span>秋のイベント「もみじの植物園まつり」がある</span><span class="s">弱い</span><span class="meter" aria-hidden="true"><i class="w1"></i></span></li>
+            </ul>
+            <button type="button" class="see">このスポットを見る</button>
+          </div>
+
+          <p class="muted" style="margin-top:12px">あなたの旅と、みんなの旅（見本のデータ）から考えたよ。</p>
+          <details>
+            <summary>どうやって考えたの？</summary>
+            <p>行った場所の種類と時間帯、同じ年齢・同じ一緒に来た人がよく行く場所、まだ行っていない場所、次の季節のイベントに点数を付けて、いちばん高い場所を選んでいます。外のサービスには送っていません。</p>
+          </details>
+
+          <h2>答え合わせのしかた</h2>
+          <div class="card" style="margin-top:0">
+            <p style="margin:0">次に来た日（前回から7日以上あけた日）に、東山動植物園で QR を読むと答え合わせ。<strong>来てくれたら、さいころを2回</strong>。</p>
+          </div>
+
+          <h2>相棒のかしこさ</h2>
+          <div class="card" style="margin-top:0">
+            <div class="lv"><p class="stars" role="img" aria-label="かしこさ 5段階の2">★★☆☆☆</p><b>レベル2</b></div>
+            <p style="margin:4px 0 0">これまでの予言: <strong>2回中1回</strong> 当たり</p>
+            <h3>予言の記録</h3>
+            <ul class="log">
+              <li><span>夏・名古屋港水族館</span><span class="hit">○ 当たり</span></li>
+              <li><span>春・鶴舞公園</span><span class="mid">△ ふつう</span></li>
+            </ul>
+          </div>
+
+          <h2>ほかの候補</h2>
+          <ul class="others">
+            <li><button type="button" class="rowbtn"><span class="tx"><b>名古屋市博物館</b><small>理由: 秋のイベントがある</small></span><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#ic-next"/></svg></button></li>
+            <li><button type="button" class="rowbtn"><span class="tx"><b>きしめん ひだまり</b><small>理由: 夕方に出かけることが多い</small></span><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#ic-next"/></svg></button></li>
+          </ul>
+
+          <div class="should">
+            <span class="lbl">Should（Must では出さない）</span>
+            <div class="two">
+              <button type="button" class="btn ghost">秋に知らせる（見本）</button>
+              <button type="button" class="btn ghost">ひらがなで見せる</button>
+            </div>
+          </div>
+        </main>
+        <div class="foot"><button type="button" class="btn primary">東山動植物園を見る</button></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="cap">表示B 答え合わせ（再訪の日・予言の場所で QR を読んだ後）</p>
+      <div class="phone">
+        <header class="top">
+          <button type="button" class="ib" aria-label="もどる"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#ic-back"/></svg></button>
+          <h1>予言の答え合わせ</h1>
+          <button type="button" class="ib" aria-label="設定"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#ic-gear"/></svg></button>
+        </header>
+        <main>
+          <div class="reward" role="status">
+            <h2>予言の場所に来てくれた！</h2>
+            <p class="big">さいころ ＋2</p>
+            <p>答え合わせに来てくれたごほうびです。</p>
+          </div>
+
+          <div class="bubble" style="margin-top:16px">
+            <img src="../アバター/tomonyan/tomonyan-excited.svg" alt="ともにゃん（わくわく）" width="60" height="60">
+            <div class="say"><p>東山動植物園、どうだった？ 正直に教えてくれると、次の予言がもっと当たるよ</p></div>
+          </div>
+          <p class="muted" style="margin-top:6px">QR を読む操作のあとなので、読み上げ「あり」なら吹き出しと同時に読む。</p>
+
+          <h2 id="b-q">東山動植物園は気に入った？</h2>
+          <p class="muted" style="margin-bottom:10px">答えで、さいころの数は変わりません。</p>
+          <div class="choices" role="group" aria-labelledby="b-q">
+            <button type="button" class="btn">気に入った</button>
+            <button type="button" class="btn">ふつう</button>
+            <button type="button" class="btn">あとで答える</button>
+          </div>
+
+          <div class="result">
+            <span class="lbl2">見本:「気に入った」を押した後</span>
+            <div role="status">
+              <p class="big">○ 予言、当たり！</p>
+              <p>相棒のかしこさが <strong>レベル3</strong> になった（★★★☆☆）。これまで 3回中2回 当たり。</p>
+            </div>
+          </div>
+        </main>
+        <div class="foot"><button type="button" class="btn primary">すごろくで振る（あと 3 回）</button></div>
+      </div>
+    </div>
+
+    <div class="side">
+      <p class="cap">ほかの状態</p>
+      <table>
+        <tr><th scope="col">状態</th><th scope="col">画面</th></tr>
+        <tr><td>読み込み中</td><td>カードの場所に灰色の枠と「ともにゃんが考えています…」</td></tr>
+        <tr><td>空（QR 0回）</td><td>「スポットで QR を読むと、ともにゃんが予言できるようになるよ」と「スポットを探す」</td></tr>
+        <tr><td>エラー</td><td>「うまくいきませんでした。少し待ってから もう一度ためしてね。」と「もう一度」。409（答え済み）は取り直す</td></tr>
+        <tr><td>オフライン</td><td>同じ PC のサーバーで計算するので、そのまま見られて答えも送れる。地図が無いので「オフライン表示中」は出さない</td></tr>
+        <tr><td>答えを待つ予言がある</td><td>表示A の上に「東山動植物園の答えを待っています」と表示B の質問だけ【仮定】</td></tr>
+        <tr><td>「ふつう」の後</td><td>「△ ふつうだったね。次はもっと考えるよ」</td></tr>
+        <tr><td>「あとで答える」の後</td><td>「あとで答えられるよ（ホームの『次はどこ？』から）」</td></tr>
+        <tr><td>送信中</td><td>3つのボタンは押せない</td></tr>
+        <tr><td>旅の2日目に予言の場所で QR</td><td>表示B は出さない。SC-04 の予言の場所のカードに「答え合わせは、次に来た日にできます」</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# 依存・ビルド
+node_modules/
+dist/
+coverage/
+
+# 実行時データ（CSVから再生成できる）
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+data/
+
+# テスト成果物
+test-results/
+playwright-report/
+playwright/.cache/
+
+# 秘密・個人環境（開かない・コミットしない）
+Password*
+*.local
+.env
+.env.*
+
+# OS・エディタ
+.DS_Store
+Thumbs.db

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-01 ホーム（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし）。見た目の正は index.html#home（ADR-002）。右の見本は index.html と違う所だけ。設計は docs/20_設計/画面設計/SC-01_ホーム.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 20px 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+h2{font-size:1.2rem;margin:22px 0 10px;line-height:1.35}
+.card{background:var(--card);border-radius:24px;padding:18px;box-shadow:var(--sh)}
+.muted{color:var(--ink2);font-size:.88rem;margin:0}
+.hello{display:flex;gap:12px;align-items:flex-end}
+.who{flex:none;display:flex;flex-direction:column;align-items:center;font-size:.8rem;font-weight:800;color:var(--ink2)}
+.avatar{width:92px;height:92px;border-radius:30px;background:linear-gradient(160deg,var(--accent-l),#FFE2A6);display:grid;place-items:center;box-shadow:var(--sh)}
+.link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 6px;color:var(--main-d);font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.bubble{flex:1;background:#fff;border-radius:22px 22px 22px 8px;padding:14px 16px;box-shadow:var(--sh);font-weight:700}
+.bubble p{margin:0}
+.chipbtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;margin-top:8px;border:0;border-radius:999px;background:#fff;color:var(--main-d);font:inherit;font-weight:800;font-size:.88rem;box-shadow:var(--sh)}
+.chipbtn[aria-pressed="true"]{background:var(--main);color:#fff}
+.next{display:flex;gap:12px;align-items:center}
+.next .av{flex:none;width:64px;height:64px;border-radius:20px;background:linear-gradient(160deg,var(--accent-l),#FFE2A6);display:grid;place-items:center}
+.next b{display:block;font-size:1.05rem;line-height:1.4}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;margin-top:12px;border:0;border-radius:16px;font:inherit;font-weight:800;text-decoration:none}
+.btn.ghost{background:#fff;color:var(--main-d);box-shadow:inset 0 0 0 2px var(--main-l),var(--sh)}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.sel label{display:block;font-size:.85rem;font-weight:800;color:var(--ink2);margin-bottom:6px}
+.sel select{width:100%;min-height:52px;border-radius:14px;border:2px solid var(--line);background:#fff;padding:0 10px;font:inherit;font-weight:700}
+.credit{display:inline-block;background:rgba(255,255,255,.95);color:var(--ink2);border-radius:999px;padding:2px 10px;font-size:.75rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.states{margin:0;padding-left:1.2em;font-size:.88rem}
+.states li{margin:4px 0}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>SC-01 ホーム（画面モック）</h1>
+  <p>左は見た目の正（<code>index.html#home</code>）。右は index.html と違う所の本番の見本: アバターの <code>&lt;img&gt;</code> と「変更」→ SC-02、「次はどこ？」→ SC-09、段差少なめのトグル、VOICEVOX の表示。</p>
+  <p>設計: <code>docs/20_設計/画面設計/SC-01_ホーム.md</code></p>
+  <div class="row">
+    <figure>
+      <figcaption>index.html のホーム（正）</figcaption>
+      <iframe src="index.html#home" title="index.html のホーム画面" width="390" height="844"></iframe>
+    </figure>
+    <section class="sample" aria-labelledby="s1-h">
+      <span class="tag">本番の見本（index.html と違う所）</span>
+      <h2 id="s1-h" style="margin-top:4px">あいさつと「変更」</h2>
+      <div class="hello">
+        <div class="who">
+          <div class="avatar"><img src="../アバター/tomonyan/tomonyan-excited.svg" alt="ともにゃん（わくわく）" width="78" height="78"></div>
+          <span>ともにゃん</span>
+          <a class="link" href="SC-02_アバター選択.html">変更</a>
+        </div>
+        <div class="bubble">
+          <p>また来てくれたね！再訪ボーナスで さいころが2回 増えたよ。</p>
+          <button type="button" class="chipbtn">読み上げ</button>
+        </div>
+      </div>
+
+      <h2>次はどこ？</h2>
+      <div class="card">
+        <div class="next">
+          <div class="av"><img src="../アバター/tomonyan/tomonyan-happy.svg" alt="ともにゃん（にこにこ）" width="56" height="56"></div>
+          <div><b>次は冬の夜、名古屋市科学館が気に入るはず</b><p class="muted">理由: 夜に出かけることが多い ほか</p></div>
+        </div>
+        <a class="btn ghost" href="SC-09_予言と答え合わせ.html">予言を見る</a>
+      </div>
+      <p class="muted" style="margin-top:8px">予言がまだ無いとき:「スポットで QR を読むと、相棒が予言できるようになるよ」（ボタンなし）</p>
+
+      <h2>はじめに選んでね（段差少なめを足す）</h2>
+      <div class="card">
+        <p class="muted">選ぶと、うわさとおすすめが あなた向けになります。選ばなくても使えます。</p>
+        <div class="sel">
+          <div><label for="age">年齢</label><select id="age"><option>選ばない</option><option selected>60代以上</option></select></div>
+          <div><label for="comp">一緒に来た人</label><select id="comp"><option>選ばない</option><option selected>夫婦</option></select></div>
+        </div>
+        <button type="button" class="chipbtn" aria-pressed="true">✓ 段差少なめ</button>
+        <p class="muted" style="margin-top:8px">選ぶと、おすすめコースから段差のあるコースを出さない（R-004）。</p>
+      </div>
+
+      <h2>VOICEVOX の表示（声が鳴っている間だけ・右下）</h2>
+      <span class="credit">VOICEVOX:春日部つむぎ</span>
+
+      <h2>状態</h2>
+      <ul class="states">
+        <li>読み込み中: 画面の中央に「読み込み中…」</li>
+        <li>エラー:「サーバーにつながりません。アプリを起動しているか確かめてね。」と「もう一度」</li>
+        <li>オフライン: 地図が無いので「オフライン表示中」は出さない（そのまま使える）</li>
+      </ul>
+    </section>
+  </div>
+</div>
+</body>
+</html>

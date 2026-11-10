@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-05 すごろく（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし）。色・カード・ボタンの正は index.html#play（ADR-002）。右は後の指示（方向性 §16）による違い: 50マス・1段5マス・縦長ジグザグの盤（自作の静的 SVG）、立体のさいころ（約3秒）、駒はアバターの img。設計は docs/20_設計/画面設計/SC-05_すごろく.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 20px 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+h2{font-size:1.15rem;margin:18px 0 8px;line-height:1.35}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+.gain{display:flex;align-items:center;gap:10px;background:var(--accent-l);color:#5A3E00;font-weight:800;border-radius:18px;padding:12px 16px}
+.card{background:var(--card);border-radius:24px;padding:16px 18px;box-shadow:var(--sh)}
+.stat{display:flex;align-items:center;gap:14px}
+.stat .tx{flex:1}
+.stat b{display:block;font-size:1.35rem;line-height:1.3}
+.bar{height:10px;border-radius:999px;background:var(--main-l);overflow:hidden;margin:6px 0}
+.bar span{display:block;height:100%;width:12%;background:var(--main);border-radius:999px}
+.chip{display:inline-block;border-radius:999px;padding:1px 10px;font-size:.8rem;font-weight:800;background:var(--accent);color:var(--accent-ink)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:58px;margin-top:14px;border:0;border-radius:18px;font-weight:800;font-size:1.05rem;background:var(--main);color:#fff;box-shadow:0 6px 0 var(--main-d)}
+.btn[aria-disabled="true"]{background:#9BB9B5;box-shadow:0 6px 0 #7E9A96;cursor:default}
+
+/* 立体のさいころ（CSS 3D）。面の対は 1-6・2-5・3-4 */
+.scene{flex:none;width:76px;height:76px;perspective:420px}
+.cube{position:relative;width:76px;height:76px;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.2,.8,.3,1)}
+.face{position:absolute;left:0;top:0;width:76px;height:76px;background:#fff;border:3px solid var(--ink);border-radius:18px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:9px;backface-visibility:hidden}
+.face i{width:13px;height:13px;border-radius:50%;place-self:center;background:transparent}
+.face i.on{background:var(--ink)}
+.f1 i.on{background:#D2402A;width:18px;height:18px}
+.f1{transform:rotateY(0deg) translateZ(38px)}
+.f6{transform:rotateY(180deg) translateZ(38px)}
+.f3{transform:rotateY(90deg) translateZ(38px)}
+.f4{transform:rotateY(-90deg) translateZ(38px)}
+.f2{transform:rotateX(90deg) translateZ(38px)}
+.f5{transform:rotateX(-90deg) translateZ(38px)}
+.cube.show-1{transform:rotateX(-14deg) rotateY(14deg)}
+.cube.show-6{transform:rotateX(-14deg) rotateY(194deg)}
+.cube.show-3{transform:rotateX(-14deg) rotateY(-76deg)}
+.cube.show-4{transform:rotateX(-14deg) rotateY(104deg)}
+.cube.show-2{transform:rotateX(-104deg) rotateY(14deg)}
+.cube.show-5{transform:rotateX(76deg) rotateY(14deg)}
+.cube.rolling{animation:tumble 2.6s cubic-bezier(.15,.55,.3,1) both}
+@keyframes tumble{
+  0%{transform:rotateX(0deg) rotateY(0deg) translateY(0)}
+  20%{transform:rotateX(380deg) rotateY(240deg) translateY(-18px)}
+  45%{transform:rotateX(760deg) rotateY(560deg) translateY(0)}
+  60%{transform:rotateX(960deg) rotateY(700deg) translateY(-8px)}
+  100%{transform:rotateX(1440deg) rotateY(1080deg) translateY(0)}
+}
+@media (prefers-reduced-motion: reduce){
+  .cube.rolling{animation-duration:.4s}
+  .cube{transition-duration:.1s}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 盤（SVG の中のマス） */
+.boardcard{background:#fff;border-radius:24px;padding:10px;box-shadow:var(--sh)}
+.board{position:relative;width:330px;height:940px;margin:0 auto}
+.board > svg{position:absolute;left:0;top:0}
+.tl > rect{fill:#FFF4E2;stroke:#F0DFC2;stroke-width:2}
+.tl > text{fill:#7A5A2A;font-weight:800;text-anchor:middle;font-family:inherit}
+.tl .n{font-size:18px}
+.tl .sn{font-size:10px;text-anchor:start}
+.tl .lb{font-size:10px}
+.tl{color:#7A5A2A}
+.tl.gift > rect{fill:#F4B43A;stroke:#C98A12}
+.tl.gift > text{fill:#3B2A00}
+.tl.gift{color:#3B2A00}
+.tl.spot > rect{fill:#fff;stroke:#0E7C74}
+.tl.spot > text{fill:#09594F}
+.tl.spot{color:#0E7C74}
+.tl.start > rect,.tl.goal > rect{fill:#0E7C74;stroke:#09594F}
+.tl.start > text,.tl.goal > text{fill:#fff}
+.tl.start,.tl.goal{color:#fff}
+.tl.now > rect{stroke:#0E7C74;stroke-width:3}
+.piece{position:absolute;width:40px;height:40px;left:209px;top:744px;filter:drop-shadow(0 4px 4px rgba(0,0,0,.25))}
+.legend{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.legend li{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:800;background:var(--main-ll);color:var(--main-d)}
+.legend li.g{background:var(--accent-l);color:#6B4A00}
+.bubble{display:flex;gap:10px;align-items:flex-end;margin-top:14px}
+.bubble img{flex:none;border-radius:18px;background:var(--accent-l)}
+.bubble p{flex:1;margin:0;background:#fff;border-radius:20px 20px 20px 6px;padding:12px 14px;box-shadow:var(--sh);font-weight:700}
+.credit{display:inline-block;background:rgba(255,255,255,.95);color:var(--ink2);border-radius:999px;padding:2px 10px;font-size:.75rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ic-gift" viewBox="0 0 24 24"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="ic-castle" viewBox="0 0 24 24"><path d="M4 21h16M6 21v-8h12v8M8 13V9h8v4M10 9V6h4v3M9 6l3-3 3 3M11 21v-3h2v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-station" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v10h14V10M9 20v-5h6v5M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4l-5.3 3 1.2-6-4.5-4.1 6-.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="dc-tree" viewBox="0 0 20 24"><rect x="8.5" y="15" width="3" height="8" rx="1" fill="#9C7A4E"/><circle cx="10" cy="10" r="8" fill="#9CCB8E"/><circle cx="7" cy="8" r="3" fill="#B4DAA6"/></symbol>
+  <symbol id="dc-house" viewBox="0 0 26 22"><path d="M2 11L13 2l11 9" fill="#E59A7E"/><rect x="5" y="10" width="16" height="11" rx="2" fill="#FFE9D2" stroke="#D9B48E" stroke-width="1.2"/><rect x="11" y="14" width="4" height="7" fill="#C98A5E"/></symbol>
+  <symbol id="dc-flower" viewBox="0 0 12 12"><circle cx="6" cy="3" r="2.4" fill="#F7A8B8"/><circle cx="9" cy="6" r="2.4" fill="#F7A8B8"/><circle cx="6" cy="9" r="2.4" fill="#F7A8B8"/><circle cx="3" cy="6" r="2.4" fill="#F7A8B8"/><circle cx="6" cy="6" r="1.8" fill="#F4B43A"/></symbol>
+  <symbol id="dc-cloud" viewBox="0 0 60 26"><path d="M14 24a10 10 0 0 1 0-20a14 14 0 0 1 26-2a12 12 0 0 1 8 22z" fill="#fff" stroke="#E6EEF0" stroke-width="1.5"/></symbol>
+</svg>
+
+<div class="page">
+  <h1>SC-05 すごろく（画面モック）</h1>
+  <p>左は色・カード・ボタンの正（<code>index.html#play</code>。盤は 20マスの旧案）。右は後の指示で替わる所の見本: <strong>50マス・1段5マス・10段の縦長ジグザグ</strong>（下=スタートの駅、上=ゴールのお城）、<strong>立体のさいころ（約3秒）</strong>、駒はいまのアバターの <code>&lt;img&gt;</code>。</p>
+  <p>設計: <code>docs/20_設計/画面設計/SC-05_すごろく.md</code>。盤の特典・スポットのマスはデータ設計 §2.2 の1枚目どおり。</p>
+  <div class="row">
+    <figure>
+      <figcaption>index.html のすごろく（色・カードの正）</figcaption>
+      <iframe src="index.html#play" title="index.html のすごろく画面" width="390" height="844"></iframe>
+    </figure>
+
+    <section class="sample" aria-labelledby="s5-h">
+      <span class="tag">本番の見本（index.html と違う所）</span>
+      <h2 id="s5-h">増えたきっかけと状況のカード（立体のさいころ）</h2>
+      <p class="gain" role="status">再訪ボーナスで さいころ ＋2</p>
+      <div class="card" style="margin-top:12px">
+        <div class="stat">
+          <div class="tx">
+            <b>1枚目</b>
+            <span>ゴールまで あと 43 マス</span>
+            <div class="bar"><span></span></div>
+            <span class="chip" id="left">さいころ あと 3回</span>
+          </div>
+          <div class="scene">
+            <div class="cube show-4" id="cube" role="img" aria-label="さいころ 4">
+              <div class="face f1" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+              <div class="face f2" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
+              <div class="face f3" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i></div>
+              <div class="face f4" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i></div>
+              <div class="face f5" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i></div>
+              <div class="face f6" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i></div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn" id="roll">さいころを振る（見本）</button>
+        <p class="sr" id="live" aria-live="polite"></p>
+        <p class="muted" style="margin-top:10px">見本のボタンは立方体を約3秒転がすだけ（目は見本の順）。本番は押した瞬間に API 10 を送り、返った目の面で止める。動きを減らす設定では約0.5秒。</p>
+      </div>
+
+      <div class="bubble">
+        <img src="../アバター/tomonyan/tomonyan-excited.svg" alt="ともにゃん（わくわく）" width="60" height="60">
+        <p>あと 3 マスで特典のマスだよ！</p>
+      </div>
+      <p class="muted" style="margin-top:8px">読み上げ「あり」なら、振ったあとにこのセリフを吹き出しと同時に読む。VOICEVOX の間は右下に <span class="credit">VOICEVOX:春日部つむぎ</span></p>
+
+      <h2>盤（50マス・縦長ジグザグ）</h2>
+      <p class="muted" style="margin-bottom:8px">いま 6 マス目／50マス。次の特典まで あと 3 マス。ゴールまで あと 43 マス。</p>
+      <div class="boardcard">
+        <div class="board">
+          <svg viewBox="0 0 330 940" width="330" height="940" aria-hidden="true" focusable="false">
+            <!-- 空・太陽・雲・お城（上） -->
+            <rect x="0" y="0" width="330" height="70" rx="16" fill="#EAF6F8"/>
+            <circle cx="300" cy="32" r="16" fill="#FFD66B"/>
+            <path d="M300 8v-4M300 60v-4M276 32h-4M328 32h-4M283 15l-3-3M317 15l3-3M283 49l-3 3M317 49l3 3" stroke="#FFD66B" stroke-width="2.5" stroke-linecap="round"/>
+            <use href="#dc-cloud" x="150" y="12" width="60" height="26"/>
+            <use href="#dc-cloud" x="220" y="38" width="40" height="18"/>
+            <g transform="translate(78 8)">
+              <rect x="6" y="38" width="44" height="18" fill="#F5F0E6" stroke="#B9A88A" stroke-width="1.2"/>
+              <path d="M0 40l28-14 28 14z" fill="#4E6F6A"/>
+              <rect x="14" y="22" width="28" height="10" fill="#F5F0E6" stroke="#B9A88A" stroke-width="1.2"/>
+              <path d="M8 24l20-12 20 12z" fill="#4E6F6A"/>
+              <path d="M20 12h16l-8-9z" fill="#4E6F6A"/>
+              <rect x="24" y="44" width="8" height="12" fill="#B9A88A"/>
+            </g>
+            <!-- 下: 線路と電車 -->
+            <path d="M0 908h330M0 924h330" stroke="#8A8A86" stroke-width="2.5"/>
+            <path d="M8 904v24M28 904v24M48 904v24M68 904v24M88 904v24M108 904v24M128 904v24M148 904v24M168 904v24M188 904v24M208 904v24M228 904v24M248 904v24M268 904v24M288 904v24M308 904v24M328 904v24" stroke="#B9A88A" stroke-width="3"/>
+            <g transform="translate(176 886)">
+              <rect x="0" y="0" width="64" height="22" rx="7" fill="#0E7C74"/>
+              <rect x="68" y="0" width="64" height="22" rx="7" fill="#0E7C74"/>
+              <rect x="6" y="5" width="12" height="8" rx="2" fill="#E1F2EE"/><rect x="24" y="5" width="12" height="8" rx="2" fill="#E1F2EE"/><rect x="42" y="5" width="12" height="8" rx="2" fill="#E1F2EE"/>
+              <rect x="74" y="5" width="12" height="8" rx="2" fill="#E1F2EE"/><rect x="92" y="5" width="12" height="8" rx="2" fill="#E1F2EE"/><rect x="110" y="5" width="12" height="8" rx="2" fill="#E1F2EE"/>
+              <rect x="0" y="15" width="132" height="3" fill="#F4B43A"/>
+            </g>
+            <!-- 段の間の飾り（川と橋・池・木・家・花） -->
+            <path d="M0 474 C40 466 80 486 120 476 S200 466 240 478 S300 486 330 474 L330 486 C300 496 260 490 240 490 S160 478 120 488 S40 478 0 486 Z" fill="#BFE0EA"/>
+            <ellipse cx="150" cy="646" rx="44" ry="11" fill="#BFE0EA"/>
+            <ellipse cx="140" cy="644" rx="8" ry="2.5" fill="#fff" opacity=".7"/>
+            <use href="#dc-tree" x="110" y="716" width="20" height="24"/><use href="#dc-tree" x="190" y="716" width="20" height="24"/><use href="#dc-tree" x="250" y="718" width="18" height="22"/>
+            <use href="#dc-tree" x="56" y="298" width="20" height="24"/><use href="#dc-tree" x="130" y="300" width="18" height="22"/><use href="#dc-tree" x="210" y="298" width="20" height="24"/>
+            <use href="#dc-house" x="130" y="550" width="26" height="22"/><use href="#dc-house" x="230" y="550" width="26" height="22"/>
+            <use href="#dc-house" x="110" y="214" width="26" height="22"/><use href="#dc-house" x="250" y="214" width="26" height="22"/>
+            <use href="#dc-flower" x="96" y="388" width="12" height="12"/><use href="#dc-flower" x="150" y="390" width="12" height="12"/><use href="#dc-flower" x="206" y="387" width="12" height="12"/><use href="#dc-flower" x="262" y="390" width="12" height="12"/>
+            <use href="#dc-flower" x="60" y="136" width="12" height="12"/><use href="#dc-flower" x="118" y="138" width="12" height="12"/><use href="#dc-flower" x="176" y="135" width="12" height="12"/><use href="#dc-flower" x="232" y="138" width="12" height="12"/>
+            <use href="#dc-flower" x="80" y="808" width="12" height="12"/><use href="#dc-flower" x="170" y="806" width="12" height="12"/>
+            <!-- 道（下から上へジグザグ） -->
+            <polyline points="37,856 293,856 293,772 37,772 37,688 293,688 293,604 37,604 37,520 293,520 293,436 37,436 37,352 293,352 293,268 37,268 37,184 293,184 293,100 37,100" fill="none" stroke="#F3E3C6" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
+            <!-- 橋（川の上・道の上に欄干） -->
+            <rect x="279" y="466" width="28" height="24" rx="3" fill="#E8C99A"/>
+            <path d="M279 468v20M307 468v20" stroke="#9C7A4E" stroke-width="3" stroke-linecap="round"/>
+            <!-- マス（0=スタート … 49=ゴール） -->
+            <g class="tl start" transform="translate(12 831)"><rect width="50" height="50" rx="14"/><use href="#ic-station" x="14" y="7" width="22" height="22"/><text class="lb" x="25" y="42">スタート</text></g>
+            <g class="tl" transform="translate(76 831)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">1</text></g>
+            <g class="tl spot" transform="translate(140 831)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">2</text><use href="#ic-pin" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">スポット</text></g>
+            <g class="tl" transform="translate(204 831)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">3</text></g>
+            <g class="tl gift" transform="translate(268 831)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">4</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(268 747)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">5</text></g>
+            <g class="tl now" transform="translate(204 747)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">6</text></g>
+            <g class="tl" transform="translate(140 747)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">7</text></g>
+            <g class="tl" transform="translate(76 747)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">8</text></g>
+            <g class="tl gift" transform="translate(12 747)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">9</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(12 663)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">10</text></g>
+            <g class="tl" transform="translate(76 663)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">11</text></g>
+            <g class="tl spot" transform="translate(140 663)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">12</text><use href="#ic-pin" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">スポット</text></g>
+            <g class="tl" transform="translate(204 663)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">13</text></g>
+            <g class="tl gift" transform="translate(268 663)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">14</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(268 579)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">15</text></g>
+            <g class="tl" transform="translate(204 579)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">16</text></g>
+            <g class="tl" transform="translate(140 579)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">17</text></g>
+            <g class="tl" transform="translate(76 579)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">18</text></g>
+            <g class="tl gift" transform="translate(12 579)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">19</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(12 495)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">20</text></g>
+            <g class="tl" transform="translate(76 495)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">21</text></g>
+            <g class="tl spot" transform="translate(140 495)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">22</text><use href="#ic-pin" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">スポット</text></g>
+            <g class="tl" transform="translate(204 495)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">23</text></g>
+            <g class="tl gift" transform="translate(268 495)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">24</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(268 411)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">25</text></g>
+            <g class="tl" transform="translate(204 411)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">26</text></g>
+            <g class="tl" transform="translate(140 411)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">27</text></g>
+            <g class="tl" transform="translate(76 411)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">28</text></g>
+            <g class="tl gift" transform="translate(12 411)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">29</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(12 327)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">30</text></g>
+            <g class="tl" transform="translate(76 327)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">31</text></g>
+            <g class="tl spot" transform="translate(140 327)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">32</text><use href="#ic-pin" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">スポット</text></g>
+            <g class="tl" transform="translate(204 327)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">33</text></g>
+            <g class="tl gift" transform="translate(268 327)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">34</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(268 243)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">35</text></g>
+            <g class="tl" transform="translate(204 243)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">36</text></g>
+            <g class="tl" transform="translate(140 243)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">37</text></g>
+            <g class="tl" transform="translate(76 243)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">38</text></g>
+            <g class="tl gift" transform="translate(12 243)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">39</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(12 159)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">40</text></g>
+            <g class="tl" transform="translate(76 159)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">41</text></g>
+            <g class="tl spot" transform="translate(140 159)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">42</text><use href="#ic-pin" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">スポット</text></g>
+            <g class="tl" transform="translate(204 159)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">43</text></g>
+            <g class="tl gift" transform="translate(268 159)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">44</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(268 75)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">45</text></g>
+            <g class="tl" transform="translate(204 75)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">46</text></g>
+            <g class="tl gift" transform="translate(140 75)"><rect width="50" height="50" rx="14"/><text class="sn" x="6" y="13">47</text><use href="#ic-gift" x="15" y="10" width="20" height="20"/><text class="lb" x="25" y="43">特典</text></g>
+            <g class="tl" transform="translate(76 75)"><rect width="50" height="50" rx="14"/><text class="n" x="25" y="32">48</text></g>
+            <g class="tl goal" transform="translate(8 71)"><rect width="58" height="58" rx="16"/><use href="#ic-castle" x="16" y="8" width="26" height="26"/><text class="lb" x="29" y="49">ゴール</text></g>
+          </svg>
+          <img class="piece" src="../アバター/tomonyan/tomonyan-happy.svg" alt="" width="40" height="40">
+        </div>
+      </div>
+      <ul class="legend" aria-label="マスの見方">
+        <li class="g"><svg width="16" height="16" aria-hidden="true" focusable="false"><use href="#ic-gift"/></svg>特典（プレゼント）</li>
+        <li><svg width="16" height="16" aria-hidden="true" focusable="false"><use href="#ic-pin"/></svg>スポット（ピン）</li>
+        <li><svg width="16" height="16" aria-hidden="true" focusable="false"><use href="#ic-star"/></svg>季節（星・2枚目）</li>
+      </ul>
+      <p class="muted" style="margin-top:10px">続きは 次に来た日も遊べます。2枚目は飾りを雪・もみじ・提灯に替え、季節のマス（星）が入る。</p>
+    </section>
+  </div>
+</div>
+<script>
+(function () {
+  var cube = document.getElementById('cube');
+  var btn = document.getElementById('roll');
+  var live = document.getElementById('live');
+  var left = document.getElementById('left');
+  var faces = [5, 2, 6, 3, 1, 4];
+  var turn = 0;
+  var rest = 3;
+  var busy = false;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  btn.addEventListener('click', function () {
+    if (busy) { return; }
+    busy = true;
+    btn.setAttribute('aria-disabled', 'true');
+    live.textContent = 'さいころを振っています';
+    var face = faces[turn % faces.length];
+    turn += 1;
+    cube.className = 'cube rolling';
+    window.setTimeout(function () {
+      cube.className = 'cube show-' + face;
+      cube.setAttribute('aria-label', 'さいころ ' + face);
+      rest = rest > 0 ? rest - 1 : 3;
+      left.textContent = 'さいころ あと ' + rest + '回';
+      live.textContent = face + ' が出ました（見本）';
+      btn.removeAttribute('aria-disabled');
+      busy = false;
+    }, reduce ? 400 : 2600);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-02 アバター選択（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし。絵は同じフォルダの上の docs/10_企画/アバター/ を相対で参照）。index.html に無い画面なので、index.html と同じ色・角丸で作った。設計は docs/20_設計/画面設計/SC-02_アバター選択.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --off-ink:#62625D;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+.phone{position:relative;width:390px;height:844px;background:var(--bg);border-radius:46px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 10px #2A2724,0 30px 60px rgba(60,40,10,.30)}
+.top{flex:none;display:flex;align-items:center;gap:10px;padding:14px 16px 8px 12px;min-height:76px}
+.top h1{flex:1;margin:0;font-size:1.55rem;font-weight:800;line-height:1.25}
+.ib{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:#fff;color:var(--main);display:grid;place-items:center;box-shadow:var(--sh)}
+main{flex:1;overflow-y:auto;padding:4px 20px 28px}
+.lead{margin:0 0 16px;font-weight:700}
+.grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.av{position:relative;width:100%;min-height:176px;border:0;border-radius:24px;background:#fff;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:14px 8px;text-align:center;transition:transform .12s}
+.av:active{transform:scale(.96)}
+.av img{display:block}
+.av b{font-size:1.05rem}
+.av .desc{font-size:.78rem;font-weight:700;color:var(--ink2)}
+.av[aria-pressed="true"]{box-shadow:inset 0 0 0 4px var(--main),var(--sh)}
+.now{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 9px;font-size:.72rem;font-weight:800;background:var(--main);color:#fff}
+.av.wait{background:#F7F6F3;box-shadow:none}
+.av.wait img{filter:brightness(0);opacity:.35}
+.waitchip{position:absolute;left:10px;top:10px;border-radius:999px;padding:1px 9px;font-size:.72rem;font-weight:800;background:#EEEDE9;color:var(--off-ink)}
+.fine{margin:18px 0 0;font-size:.8rem;color:var(--ink2);text-align:center}
+.side{width:390px}
+.side h2{font-size:1.15rem;margin:0 0 10px}
+.side .card{background:#fff;border-radius:24px;padding:18px;box-shadow:var(--sh);margin-bottom:16px}
+.side ul{margin:0;padding-left:1.2em;font-size:.88rem}
+.side li{margin:4px 0}
+.toast{display:inline-block;background:var(--ink);color:#fff;border-radius:999px;padding:8px 18px;font-weight:800;font-size:.9rem}
+.one{width:180px}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>SC-02 アバター選択（画面モック）</h1>
+  <p>index.html に無い画面。ホームの「変更」から開き、相棒を選ぶとホームに戻る。4枚の絵がそろった体だけ選べる（いまは4体とも選べる）。既定はともにゃん。</p>
+  <p>設計: <code>docs/20_設計/画面設計/SC-02_アバター選択.md</code></p>
+  <div class="row">
+    <div class="phone">
+      <header class="top">
+        <button type="button" class="ib" aria-label="もどる"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <h1>相棒をえらぶ</h1>
+        <button type="button" class="ib" aria-label="設定"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+      </header>
+      <main>
+        <p class="lead">いっしょに旅する相棒を選んでね。選ぶとホームにもどります。</p>
+        <ul class="grid">
+          <li><button type="button" class="av" aria-pressed="true"><span class="now">✓ いまの相棒</span><img src="../アバター/tomonyan/tomonyan-happy.svg" alt="ともにゃん（にこにこ）" width="96" height="96"><b>ともにゃん</b><span class="desc">灯りの猫・のんびり</span></button></li>
+          <li><button type="button" class="av" aria-pressed="false"><img src="../アバター/hoshirou/hoshirou-happy.svg" alt="ほしろう（にこにこ）" width="96" height="96"><b>ほしろう</b><span class="desc">星空好きの子・元気</span></button></li>
+          <li><button type="button" class="av" aria-pressed="false"><img src="../アバター/pikkon/pikkon-happy.svg" alt="ぴっこん（にこにこ）" width="96" height="96"><b>ぴっこん</b><span class="desc">お堀の小鳥・さっぱり</span></button></li>
+          <li><button type="button" class="av" aria-pressed="false"><img src="../アバター/toujii/toujii-happy.svg" alt="とうじい（にこにこ）" width="96" height="96"><b>とうじい</b><span class="desc">お城の見回り番・ていねい</span></button></li>
+        </ul>
+        <p class="fine">絵はこのアプリのために作ったものです。声は設定で変えられます。</p>
+      </main>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <h2>準備中の体（4枚そろわないとき）</h2>
+        <div class="one"><button type="button" class="av wait" aria-disabled="true"><span class="waitchip">準備中</span><img src="../アバター/toujii/toujii-happy.svg" alt="とうじい（準備中）" width="96" height="96"><b>とうじい</b><span class="desc">準備中</span></button></div>
+        <ul>
+          <li>happy の絵を CSS の <code>filter: brightness(0)</code> と薄い不透明度でシルエットにする（絵は別に作らない）。</li>
+          <li>「準備中」と名前の文字を添える。押すと「準備中です。もうしばらく待ってね」。</li>
+          <li>いまは4体とも4枚そろっているので、この状態は出ない（見本）。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>選んだ後</h2>
+        <p><span class="toast">ほしろうが相棒になったよ</span></p>
+        <ul>
+          <li>ホームへ戻り、ホームの絵・すごろくの駒・声がその相棒になる。</li>
+          <li>送信中は「えらんでいます…」で、ほかのカードも押せない。</li>
+          <li>失敗:「うまくいきませんでした。少し待ってから もう一度ためしてね。」と「もう一度」。</li>
+          <li>読み込み中: 灰色の枠4つと「読み込み中…」。地図が無いので「オフライン表示中」は出さない。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

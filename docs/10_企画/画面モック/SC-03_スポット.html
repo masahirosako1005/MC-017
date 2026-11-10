@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-03 スポット（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし・タイルも読まない）。見た目の正は index.html#spots / #sheet（ADR-002。一覧 #list は 2026-11-09 に削除）。右の見本は index.html と違う所（オフラインの簡易地図・いまここ（デモ））。設計は docs/20_設計/画面設計/SC-03_スポット.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --off:#D8D8D4; --off-ink:#62625D;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1700px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 0 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample > .in{padding:0 20px}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+h2{font-size:1.15rem;margin:18px 0 8px;line-height:1.35}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+/* 簡易地図（タイルなし）。アイコンは index.html の .mk と同じ部品 */
+.mapwrap{position:relative;height:420px;overflow:hidden;background:#F3EEE3;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.mapwrap .grid{position:absolute;inset:0}
+.attr{position:absolute;left:10px;top:10px;z-index:6;display:flex;align-items:center;min-height:44px;padding:4px 14px;border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 2px 6px rgba(0,0,0,.1);font-size:.78rem;font-weight:700}
+.attr a{color:var(--main-d);display:inline-flex;align-items:center;min-height:36px}
+.offbadge{position:absolute;left:10px;top:62px;z-index:6;display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:4px 12px;border-radius:999px;background:var(--ink);color:#fff;font-size:.8rem;font-weight:800}
+.mapctl{position:absolute;right:12px;top:10px;z-index:6;display:flex;flex-direction:column;gap:8px}
+.ib{width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:var(--main);display:grid;place-items:center;box-shadow:var(--sh)}
+.mk{position:absolute;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;min-width:48px;min-height:48px;transform:translate(-50%,-24px);z-index:2}
+.mk .pin{width:46px;height:46px;border-radius:50%;background:var(--main);color:#fff;border:3px solid #fff;display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+.mk .lab{margin-top:3px;display:flex;align-items:center;gap:5px;background:#fff;border-radius:999px;padding:2px 9px 2px 3px;font-size:12px;font-weight:800;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.14)}
+.mk .sb{flex:none;border-radius:999px;padding:0 7px;font-size:11px;font-weight:800;background:var(--accent);color:var(--accent-ink)}
+.mk.off{z-index:1}
+.mk.off .pin{background:var(--off);color:#8C8C86;box-shadow:none;width:38px;height:38px}
+.mk.off .lab{background:rgba(255,255,255,.9);box-shadow:none;padding:2px 3px;color:var(--off-ink)}
+.mk.off .sb{background:#EEEDE9;color:var(--off-ink)}
+.here{position:absolute;z-index:4;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.here .dot{width:22px;height:22px;border-radius:50%;background:#C62828;border:4px solid #fff;box-shadow:0 0 0 6px rgba(198,40,40,.22)}
+.here .lab{margin-top:4px;background:#C62828;color:#fff;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:800;white-space:nowrap}
+.note{margin:8px 20px 0;font-size:.8rem;color:var(--ink2)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-castle" viewBox="0 0 24 24"><path d="M4 21h16M6 21v-8h12v8M8 13V9h8v4M10 9V6h4v3M9 6l3-3 3 3M11 21v-3h2v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4l-5.3 3 1.2-6-4.5-4.1 6-.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="page">
+  <h1>SC-03 スポット（画面モック）</h1>
+  <p>左の2つは見た目の正（地図・概要シート）。一覧は無い（Must の R-011 を人の判断で削除）。本番の地図は Leaflet＋地理院の淡色地図で、部品と位置は index.html どおり。</p>
+  <p>右は index.html と違う所の見本: タイルが読めないときの<strong>簡易地図＋「オフライン表示中」</strong>、デモの<strong>「いまここ（デモ）」</strong>、高さ 44px の出典のプレート。設計: <code>docs/20_設計/画面設計/SC-03_スポット.md</code></p>
+  <div class="row">
+    <figure>
+      <figcaption>地図（index.html#spots）</figcaption>
+      <iframe src="index.html#spots" title="index.html のスポット画面（地図）" width="390" height="844"></iframe>
+    </figure>
+    <figure>
+      <figcaption>概要シート（index.html#sheet）</figcaption>
+      <iframe src="index.html#sheet" title="index.html のスポットの概要シート" width="390" height="844"></iframe>
+    </figure>
+    <section class="sample" aria-labelledby="s3-h">
+      <div class="in">
+        <span class="tag">本番の見本（index.html と違う所）</span>
+        <h2 id="s3-h">オフラインの簡易地図（秋・いまここ（デモ）＝名古屋城）</h2>
+        <p class="muted">タイルの失敗が3回続くか <code>navigator.onLine</code> が false のとき。アイコンは同じ部品で、押すと概要が出る。</p>
+      </div>
+      <div class="mapwrap" role="region" aria-label="簡易地図（スポットの位置だけ）">
+        <svg class="grid" viewBox="0 0 390 420" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path d="M0 210h390M195 0v420M0 105h390M0 315h390M97 0v420M292 0v420" stroke="#E7DFCF" stroke-width="1"/>
+          <path d="M0 300 C90 270 160 330 250 290 S360 250 390 262" stroke="#CFE3EA" stroke-width="10" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="attr"><a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener noreferrer">出典：地理院タイル</a></div>
+        <div class="offbadge" role="status" aria-live="polite">オフライン表示中</div>
+        <div class="mapctl">
+          <button type="button" class="ib" aria-label="拡大"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button type="button" class="ib" aria-label="縮小"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M5 12h14"/></svg></button>
+        </div>
+        <button type="button" class="mk off" style="left:196px;top:110px" aria-label="名古屋城（ほかの季節）"><span class="pin"><svg width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-castle"/></svg></span><span class="lab"><span class="sb">春</span></span></button>
+        <button type="button" class="mk" style="left:300px;top:270px" aria-label="東山動植物園、秋"><span class="pin"><svg width="22" height="22" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg></span><span class="lab"><span class="sb">秋</span><span class="nm">東山動植物園</span></span></button>
+        <button type="button" class="mk" style="left:236px;top:186px" aria-label="きしめん ひだまり、通年"><span class="pin"><svg width="22" height="22" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg></span><span class="lab"><span class="sb">通年</span><span class="nm">きしめん ひだまり</span></span></button>
+        <button type="button" class="mk off" style="left:120px;top:300px" aria-label="名古屋市科学館（ほかの季節）"><span class="pin"><svg width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-star"/></svg></span><span class="lab"><span class="sb">冬</span></span></button>
+        <div class="here" style="left:196px;top:150px"><span class="dot"></span><span class="lab">いまここ（デモ）</span></div>
+      </div>
+      <p class="note">地図の画像が読めないため、簡易地図を出しています。つながると自動で戻ります。</p>
+    </section>
+  </div>
+</div>
+</body>
+</html>

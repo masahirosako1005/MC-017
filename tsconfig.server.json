@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": [
+    "app/server/**/*.ts",
+    "app/shared/**/*.ts",
+    "scripts/**/*.ts",
+    "tests/unit/**/*.ts",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ],
+  "exclude": ["tests/unit/client/**"]
+}

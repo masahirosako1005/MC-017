@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-10 QRスタンプ（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし・カメラは使わない）。見た目の正は index.html#qr（ADR-002）。右は「取れた後」と「今日はもう取れています」と送信中の見本。設計は docs/20_設計/画面設計/SC-10_QRスタンプ.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --off-ink:#62625D;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 20px 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+h2{font-size:1.15rem;margin:18px 0 8px;line-height:1.35}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+.done{background:#fff;border-radius:24px;padding:20px 18px;box-shadow:var(--sh);text-align:center}
+.stamp{width:96px;height:96px;margin:0 auto 8px;border-radius:50%;background:var(--accent-l);color:#8A5A00;display:grid;place-items:center;transform:rotate(-8deg);box-shadow:inset 0 0 0 4px var(--accent)}
+.done h3{margin:0;font-size:1.25rem}
+.done .spot{margin:2px 0 10px;font-weight:800;color:var(--ink2)}
+.chip{display:inline-block;border-radius:999px;padding:4px 14px;font-size:.9rem;font-weight:800;background:var(--main);color:#fff}
+.chip.off{background:#EEEDE9;color:var(--off-ink)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:58px;margin-top:14px;border:0;border-radius:18px;font-weight:800;font-size:1.05rem}
+.btn.gold{background:var(--accent);color:var(--accent-ink);box-shadow:0 6px 0 var(--accent-d)}
+.btn.primary{background:var(--main);color:#fff;box-shadow:0 6px 0 var(--main-d)}
+.btn[aria-disabled="true"]{background:#9BB9B5;color:#fff;box-shadow:0 6px 0 #7E9A96;cursor:default}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="page">
+  <h1>SC-10 QRスタンプ（画面モック）</h1>
+  <p>左は見た目の正（<code>index.html#qr</code>）。カメラは使わず、見本のボタンで読み取る。お店のレジ横の QR も同じ画面。</p>
+  <p>右は index.html と違う所の見本: 取れた後（「すごろくで遊ぶ」へ）、同じ日の2回目の「今日はもう取れています」、送信中。設計: <code>docs/20_設計/画面設計/SC-10_QRスタンプ.md</code></p>
+  <div class="row">
+    <figure>
+      <figcaption>index.html の QR スタンプ（正）</figcaption>
+      <iframe src="index.html#qr" title="index.html の QR スタンプ画面" width="390" height="844"></iframe>
+    </figure>
+    <section class="sample" aria-labelledby="s10-h">
+      <span class="tag">本番の見本（index.html と違う所）</span>
+      <h2 id="s10-h">取れた後</h2>
+      <div class="done">
+        <div class="stamp"><svg width="44" height="44" aria-hidden="true" focusable="false"><use href="#ic-check"/></svg></div>
+        <div role="status">
+          <h3>スタンプが取れたよ！</h3>
+          <p class="spot">名古屋城</p>
+          <span class="chip">さいころを1回振れるよ</span>
+        </div>
+        <button type="button" class="btn gold">すごろくで遊ぶ</button>
+      </div>
+      <p class="muted" style="margin-top:8px">再訪の日に予言の場所で読んだときは、ここで止まらず答え合わせ（SC-09 表示B）へ移る。</p>
+
+      <h2>今日はもう取れています（同じ日の2回目）</h2>
+      <div class="done">
+        <div role="status">
+          <h3>スタンプが取れたよ！</h3>
+          <p class="spot">名古屋城</p>
+          <span class="chip off">今日はもう取れています。さいころは増えません</span>
+        </div>
+        <button type="button" class="btn gold">すごろくで遊ぶ</button>
+      </div>
+
+      <h2>送信中</h2>
+      <button type="button" class="btn primary" aria-disabled="true">読み取っています…</button>
+      <p class="muted" style="margin-top:10px">失敗したら「もう一度」。同じ requestId で送り直すので二重に増えない。地図が無いので「オフライン表示中」は出さない。</p>
+    </section>
+  </div>
+</div>
+</body>
+</html>

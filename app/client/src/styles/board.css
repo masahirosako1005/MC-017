@@ -1,0 +1,62 @@
+﻿/* すごろくの盤（9段×5マスのジグザグ）とさいころの全画面表示（SC-05 §12、ADR-022）。mock.css・app.css の古い盤の規則を上書きする */
+
+/* 盤: 絵と同じ SVG の中にマスを置き、幅に合わせて拡大縮小する（viewBox 360×860） */
+.board.wide{position:relative;width:100%;height:auto;aspect-ratio:360/860;margin:0}
+.board.wide > svg{position:static;display:block;width:100%;height:100%}
+.tile rect{fill:#FFF9EC;stroke:#C8A468;stroke-width:3}
+.tile text{font-family:inherit;font-weight:800;text-anchor:middle;fill:#7A5A2A}
+.tile .n{font-size:21px}
+.tile .tn{font-size:11px;text-anchor:start}
+.tile .lb{font-size:11px}
+.tile.gift rect{fill:#F4B43A;stroke:#C98A12}
+.tile.gift text{fill:#3B2A00}
+.tile.discount rect{fill:#D9EBFF;stroke:#2F6DB5}
+.tile.discount text{fill:#12365F}
+.tile.again rect{fill:#E8DEFA;stroke:#6B4FB3}
+.tile.again text{fill:#3A2478}
+.tile.spot rect{fill:#fff;stroke:#0E7C74}
+.tile.spot text{fill:#09594F}
+.tile.event rect{fill:#fff;stroke:#C98A12}
+.tile.event text{fill:#7A5000}
+.tile.start rect,.tile.goal rect{fill:#0E7C74;stroke:#09594F}
+.tile.start text,.tile.goal text{fill:#fff}
+.tile.now rect{stroke:#E0457B;stroke-width:5}
+.board.wide .piece{height:auto;aspect-ratio:1;margin:0}
+.board.wide .piece .avimg{width:100%}
+
+/* さいころ: 盤・ヘッダー・下のメニューの上に画面いっぱいで重ねる（.phone の中。.stage は mock.css の別物なので xd- を付ける） */
+.xd-ov{position:absolute;inset:0;z-index:42;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.35),rgba(30,86,120,.9));opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+.xd-ov.open{opacity:1;visibility:visible;transition:opacity .3s}
+.xd-plate{margin:0;background:var(--main-d);color:#fff;border-radius:999px;padding:6px 20px;font-weight:800;font-size:1.1rem;text-align:center;min-height:44px;display:flex;align-items:center}
+.xd-stage{position:relative;width:100%;height:330px}
+.xd-floor{position:absolute;left:8%;right:8%;bottom:18px;height:92px;border-radius:50%;background:rgba(255,248,238,.92);border:4px solid #C8A468;box-shadow:inset 0 6px 14px rgba(120,80,20,.18)}
+.xd-roller{position:absolute;left:50%;bottom:44px;width:0;height:0}
+.xd-shadow{position:absolute;left:-62px;bottom:-14px;width:124px;height:26px;border-radius:50%;background:rgba(60,40,10,.42)}
+.xd-hop{position:absolute;left:-75px;bottom:0;width:150px;height:150px}
+.xd-scene{position:relative;width:150px;height:150px;perspective:900px}
+/* 止まったときの光。filter を 3D の親に掛けると、描画が消えることがあったので、うしろに敷く光の板にする */
+.xd-scene.landed::before{content:'';position:absolute;inset:-34px;border-radius:50%;z-index:-1;background:radial-gradient(circle,rgba(255,214,107,.95) 0,rgba(255,214,107,.55) 45%,rgba(255,214,107,0) 72%)}
+.xd-cube{position:relative;width:150px;height:150px;transform-style:preserve-3d}
+.xd-cube.wait{animation:xd-wait 3.2s linear infinite}
+@keyframes xd-wait{to{transform:rotateX(360deg) rotateY(720deg)}}
+.xd-face{position:absolute;left:0;top:0;width:150px;height:150px;background:#fff;border:5px solid var(--ink);border-radius:30px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:18px;backface-visibility:hidden}
+.xd-face i{width:28px;height:28px;border-radius:50%;place-self:center}
+.xd-face i.on{background:var(--ink)}
+.xf1 i.on{background:#D2402A;width:38px;height:38px}
+.xf1{transform:rotateY(0deg) translateZ(75px)}
+.xf6{transform:rotateY(180deg) translateZ(75px)}
+.xf3{transform:rotateY(90deg) translateZ(75px)}
+.xf4{transform:rotateY(-90deg) translateZ(75px)}
+.xf2{transform:rotateX(90deg) translateZ(75px)}
+.xf5{transform:rotateX(-90deg) translateZ(75px)}
+.xd-skip{min-height:48px;min-width:140px;border:0;border-radius:16px;background:#fff;color:var(--main-d);font-weight:800;font-size:1.05rem;padding:0 20px;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+@media (prefers-reduced-motion: reduce){
+  .xd-ov{transition-duration:.01s}
+  .xd-cube.wait{animation:none}
+}
+
+/* 🏪 店のキャンペーンのマス（U-11）。🎁（金）と区別できるよう、桃色の塗りと濃い文字 */
+.tile.shop rect{fill:#FCE3EC;stroke:#C23366;stroke-width:4}
+.tile.shop text{fill:#7A1238}
+

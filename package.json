@@ -1,0 +1,46 @@
+{
+  "name": "mc017-tabi-sugoroku",
+  "version": "0.1.0",
+  "private": true,
+  "description": "再訪につながる観光すごろくと相棒の予言（localhost のみで動く競技用アプリ）",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:server": "tsx watch app/server/src/main.ts",
+    "dev:client": "vite",
+    "build": "vite build",
+    "start": "tsx scripts/start.ts",
+    "start:demo": "tsx scripts/start-demo.ts",
+    "start:admin": "tsx scripts/start-admin.ts",
+    "start:voice": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-voicevox.ps1",
+    "import:csv": "tsx scripts/import-csv.ts",
+    "import:avatars": "tsx scripts/import-avatars.ts",
+    "typecheck": "tsc -p tsconfig.server.json && tsc -p tsconfig.e2e.json && tsc -p app/client/tsconfig.json",
+    "lint": "tsx scripts/check-forbidden.ts",
+    "test": "vitest run",
+    "test:e2e": "vite build && playwright test"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^5.3.0",
+    "leaflet": "^1.9.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/express": "^5.0.6",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "vite": "^7.3.7",
+    "vitest": "^5.1.0"
+  }
+}

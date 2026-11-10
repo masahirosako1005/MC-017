@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-07 特典（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし）。見た目の正は index.html#perks（一覧）と #use（使う確認）（ADR-002）。右は index.html に無い「期限切れ」と「空」の見本。設計は docs/20_設計/画面設計/SC-07_特典.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --off-ink:#62625D;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1700px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 20px 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+h2{font-size:1.15rem;margin:18px 0 8px;line-height:1.35}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+.cp{position:relative;margin-top:10px;background:#fff;border-radius:24px;box-shadow:var(--sh);overflow:hidden}
+.cp .top2{display:flex;gap:12px;align-items:center;padding:16px 18px 14px}
+.cp .top2 .ic{flex:none;width:50px;height:50px;border-radius:16px;background:var(--accent-l);color:#8A5A00;display:grid;place-items:center}
+.cp .top2 .grow{flex:1;min-width:0}
+.cp .top2 b{display:block;font-size:1.08rem;line-height:1.35}
+.cp .cut{height:0;border-top:2px dashed var(--line);margin:0 18px}
+.cp dl{margin:0;padding:12px 18px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.88rem}
+.cp dt{font-weight:800;color:var(--ink2)}
+.cp dd{margin:0}
+.cp.exp{background:#F5F4F0;box-shadow:none}
+.cp.exp .top2 .ic{background:#E8E7E2;color:#8C8C86}
+.chip{display:inline-block;border-radius:999px;padding:0 9px;font-size:.75rem;font-weight:800;background:#EEEDE9;color:var(--off-ink)}
+.empty{background:#fff;border-radius:24px;padding:22px 18px;box-shadow:var(--sh);text-align:center}
+.empty .ic{width:64px;height:64px;margin:0 auto 8px;border-radius:20px;background:var(--accent-l);color:#8A5A00;display:grid;place-items:center}
+.empty p{margin:0;font-weight:700}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:58px;margin-top:14px;border:0;border-radius:18px;font-weight:800;font-size:1.05rem;background:var(--accent);color:var(--accent-ink);box-shadow:0 6px 0 var(--accent-d);text-decoration:none}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ic-gift" viewBox="0 0 24 24"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="page">
+  <h1>SC-07 特典（画面モック）</h1>
+  <p>左2つは見た目の正（一覧 <code>index.html#perks</code>、使う確認 <code>index.html#use</code>）。右は index.html に無い状態の見本: <strong>期限切れ</strong>のクーポンと、クーポンが0枚の<strong>空</strong>。</p>
+  <p>設計: <code>docs/20_設計/画面設計/SC-07_特典.md</code></p>
+  <div class="row">
+    <figure>
+      <figcaption>特典の一覧（index.html#perks）</figcaption>
+      <iframe src="index.html#perks" title="index.html の特典画面" width="390" height="844"></iframe>
+    </figure>
+    <figure>
+      <figcaption>使う確認（index.html#use）</figcaption>
+      <iframe src="index.html#use" title="index.html の特典を使う確認" width="390" height="844"></iframe>
+    </figure>
+    <section class="sample" aria-labelledby="s7-h">
+      <span class="tag">本番の見本（index.html と違う所）</span>
+      <h2 id="s7-h">期限切れのクーポン</h2>
+      <div class="cp exp">
+        <div class="top2">
+          <span class="ic"><svg width="26" height="26" aria-hidden="true" focusable="false"><use href="#ic-gift"/></svg></span>
+          <span class="grow"><b>お土産 10%オフ</b><span class="chip">期限切れ</span></span>
+        </div>
+        <div class="cut"></div>
+        <dl>
+          <dt>使えるお店</dt><dd>あかり堂</dd>
+          <dt>期限</dt><dd>2026-10-31 まで（過ぎました）</dd>
+        </dl>
+      </div>
+      <p class="muted" style="margin-top:8px">灰色のカードとチップ「期限切れ」。「使う」ボタンは出さない。並びは 新しいもの→使える→次に来た日から→利用済み→期限切れ【仮定】。</p>
+
+      <h2>空（クーポン0枚）</h2>
+      <div class="empty">
+        <div class="ic"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#ic-gift"/></svg></div>
+        <p>まだ特典はありません。</p>
+        <p class="muted">すごろくの特典マスに止まると もらえるよ。</p>
+        <a class="btn" href="SC-05_すごろく.html">すごろくで遊ぶ</a>
+      </div>
+
+      <h2>ほかの状態</h2>
+      <ul class="muted" style="padding-left:1.2em">
+        <li>読み込み中: スタンプのカードとクーポンの場所に灰色の枠と「読み込み中…」</li>
+        <li>使うの失敗（409）:「この特典は いま使えません」と一覧を取り直す</li>
+        <li>送信中: ［使う］は押せない（素早い2回押しでも1回だけ）</li>
+        <li>オフライン: 同じ PC のサーバーなので見せて使える。地図が無いので「オフライン表示中」は出さない</li>
+      </ul>
+    </section>
+  </div>
+</div>
+</body>
+</html>

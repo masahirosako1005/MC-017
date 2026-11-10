@@ -1,0 +1,48 @@
+---
+description: コーディングルール。React+Vite+TS / Express+zod / better-sqlite3 / route→service→repository / セキュリティ / テスト。
+globs: "**/*.ts,**/*.tsx,**/*.css,package.json,vite.config.*,playwright.config.*,vitest.config.*"
+alwaysApply: false
+---
+
+# コーディングルール
+
+## 技術（固定）
+React + Vite + TypeScript **6.0系**（クライアント）／ Express + zod（サーバー）／ SQLite（better-sqlite3）／ Leaflet ／ Vitest ／ Playwright。他の主要技術は足さない。npm・ポート・E2E の実行条件は `environment.mdc`。
+
+## 構成【仮定】
+単一 `package.json`。`app/client`（UI、Vite のルート。絵は `app/client/public/avatars/`）・`app/server/src`（API）・`app/shared`（zodスキーマと型・純粋な計算）・`tests/unit`（Vitest）・`tests/e2e`（Playwright）・`db/`（スキーマSQL）・`scripts/`（CSV取込など）。本番相当は `npm run build` 後に Express が配信し、1ポートで動かす。
+
+## 層（サーバー）
+`route → service → repository` の一方向。
+- **route**: HTTP入出力のみ。zod で `params/query/body` を検証して service を呼ぶ。業務ロジック・SQL禁止。
+- **service**: 業務ルール。HTTPもSQLも知らない。
+- **repository**: SQLのみ。better-sqlite3 を触るのはここだけ。
+- 逆向き・飛び越し（route→repository 等）禁止。
+
+## 保守性
+- 1ファイル **300行目安**。超えそうなら分割（超過は理由をコメントでなく audit に残す）。
+- 型は `any` 禁止。入力型はzodスキーマから `z.infer`。クライアントとサーバーで同じスキーマを使う。
+- 全 tsconfig に `"strict": true` を明示し、構成要素を個別に `false` にしない。`catch` の変数は `unknown`。理由なしの `@ts-ignore` 禁止。追加の厳格化は `security-quality.mdc`。
+- 関数は1つの責務。魔法の数値は名前を付ける。コメントは「なぜ」だけ。
+
+## セキュリティ
+- **SQL は必ずプレースホルダ**（`?` / 名前付き）。`prepare()` や `exec()` に文字列連結・テンプレート補間で値を入れない。
+- **`innerHTML` / `outerHTML` / `insertAdjacentHTML` / `dangerouslySetInnerHTML` / `document.write` / `eval` / `new Function` 禁止**。表示は React の通常描画か `textContent`。Leaflet のポップアップも DOM 要素か `textContent` で作る。
+- 全入力を zod で検証し、サイズ・件数・範囲に上限を付ける。未知キーは拒否する（方法は M3 に zod 公式で確認し ADR に記録）。
+- レスポンスヘッダは `security-quality.mdc` のとおり（CSP 全文・nosniff・Referrer-Policy・X-Frame-Options・Permissions-Policy・COOP/CORP・`/api` の no-store）。**HSTS は送らない。Helmet は使わない。** 依存追加なしで自前ミドルウェア【仮定】。404・エラー応答にも同じヘッダを付ける。
+- CORS は開かない（同一オリジン。開発は Vite の proxy）。`127.0.0.1` のみ listen。
+- エラーはスタックや内部パスを返さない。ユーザー向けは日本語の短い文、詳細はサーバーログ（個人情報なし）。
+- 秘密・個人情報をコード・ログ・docs に書かない。
+
+## データ完全性
+- スキーマは `db/` のSQLで版管理し、`PRAGMA foreign_keys = ON`。`NOT NULL` / `UNIQUE` / `CHECK` / 外部キーで DB 側でも守る。
+- 複数行の更新は **トランザクション**。CSV取込は**冪等**（再実行で重複しない）、読込件数・除外件数と理由をログ。
+- 日時は ISO 8601 文字列、タイムゾーンは JST 固定を明記【仮定】。文字コードは UTF-8（BOM除去）。
+- スタンプ等の「獲得」は二重付与されない一意制約を持つ。
+
+## テスト
+- Vitest: service は単体、repository は一時SQLite（`:memory:`）、route は実 Express を一時ポートで起動して `fetch`。
+- Playwright: 通しデモ（利用者の主要シナリオ）を E2E。オフライン切替（`context.setOffline(true)`）と出典表示も確認。**1並列、dev を止めてから実行、毎回状態を戻す**（`environment.mdc`）。DB は `:memory:`。
+- **テストを消さない・`skip`/`only` を残さない・期待値を実装に合わせて緩めない。** 失敗は原因を直す（`/fix`）。
+- 新しい振る舞いにはテストを同時に足す。バグ修正には再発防止テストを足す。
+- Playwright のブラウザ取得は開発時のみ（アプリ動作ではない）。外部リソース.md に記録。

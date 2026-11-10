@@ -1,0 +1,39 @@
+---
+description: 環境ルール。.npmrc(ignore-scripts)・TypeScript 6.0系・PowerShell・ポート3000/5173・E2E(1並列/状態を戻す)・Gitを使わない・未実行テストの合否を書かない。
+alwaysApply: true
+---
+
+# 環境ルール
+
+## npm
+- **`npm install` の前に** リポジトリ直下の `.npmrc` に `ignore-scripts=true` があることを確認する（無ければ先に作る）。依頼文の `ignore-script` は npm の設定名が `ignore-scripts` のため、こちらを使う。
+- `ignore-scripts=true` のため、依存の install スクリプトは動かない。ネイティブ依存（better-sqlite3 等）は導入後に必ず**実際に開けるか**確認する:
+  ```powershell
+  node -e "const D=require('better-sqlite3'); const d=new D(':memory:'); console.log('sqlite ok', d.prepare('select sqlite_version() v').get().v)"
+  ```
+  動かないときの手順【仮定】: ① `npm ls better-sqlite3` で版と配置を確認 ② `npm rebuild better-sqlite3 --ignore-scripts=false`（このパッケージ1つだけ。`.npmrc` は変えない）③ それでも不可なら、止まって報告（autonomy ルールの停止条件）。
+- **TypeScript は 6.0 系**（確認時 6.0.3、Apache-2.0）。`package.json` は `"typescript": "~6.0.3"` のように 6.0 系に固定し、7.x にしない。`typescript-eslint` の peer は `>=4.8.4 <6.1.0`（確認 2026-11-09）なので 6.0 系と整合する。
+- 導入前の `npm view`・外部リソース.md 記録は competition ルールのとおり。
+
+## シェルとポート
+- シェルは **PowerShell**（Windows）。`&&`・`||`・`export`・`rm -rf`・`grep`・`cat` を使わない。連続実行は `;`、成否は `$LASTEXITCODE`、削除は `Remove-Item`、検索は `Select-String` か `rg`。パスは `\` と引用符。
+- Windows PowerShell 5.1 前提【仮定】: `Invoke-WebRequest` は `-UseBasicParsing`、`Get-Content`/`Set-Content` は `-Encoding UTF8`。`-SkipHttpErrorCheck` は使えない。**ヘッダの確認は `curl.exe`**（`curl` は `Invoke-WebRequest` の別名のため `.exe` を付ける）: `curl.exe -sS -o NUL -D - http://127.0.0.1:3000/api/health`（HSTS が無いこと等、チェックリスト V1）。ダブルクォート内のバッククォートは制御文字になるので、文字列はシングルクォートで書く。
+- ポート【仮定】: **Express = 3000**（API と本番相当の配信）、**Vite dev = 5173**（`/api` は `127.0.0.1:3000` へ proxy）。どちらも `127.0.0.1` のみ。
+- 起動前後にポートを確認する:
+  ```powershell
+  Get-NetTCPConnection -LocalPort 3000,5173 -State Listen -ErrorAction SilentlyContinue
+  ```
+
+## テスト実行
+- **Vitest**: DB は**メモリ上**（`:memory:`）。ファイルDBをテストで使わない。
+- **E2E（Playwright）**: `workers: 1`、`fullyParallel: false`。
+  1. 実行前に **dev サーバー（5173）と手動起動の 3000 を止め**、ポートが空いていることを確認する。E2E 用サーバーは Playwright の `webServer` が起動し、`reuseExistingServer: false`。
+  2. サーバーの DB は `:memory:`。**各テストごとに状態を初期に戻す**（新しいブラウザコンテキスト＝localStorage/オフライン設定なし、DB は再シード）。テスト同士の順序依存を作らない。
+  3. 実行後は起動したサーバーを止め、3000/5173 が空いていることを確認する。
+- Playwright のブラウザ取得（`npx playwright install`）は手動の開発準備。`ignore-scripts` では自動で走らない。
+
+## 報告
+- **実行していないテストの合否は書かない。** docs・README・state・audit・最終報告のいずれでも、実行して得た結果だけを「PASS/FAIL」と書く。未実行は「未実行」、実行できない理由があればその理由を書く。結果には実行日時（`Get-Date`）とコマンドを添える。
+
+## Git
+- **Git は使わない。** `git` コマンド（commit/branch/diff/stash/worktree 等）を実行しない。変更履歴は audit.md と各文書で追う。`.gitignore` は誤コミット防止のために残す（読み取り専用の保険）。

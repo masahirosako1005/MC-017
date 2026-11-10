@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-04 スポット詳細（画面モック）— 名古屋すごろく旅（仮称）</title>
+<!-- 画面モック（外部の読み込みなし）。見た目の正は index.html#detail（ADR-002）。右の見本は index.html に無い「予言の場所」のカード・押せるお店の行・下の操作の2つの状態。設計は docs/20_設計/画面設計/SC-04_スポット詳細.md -->
+<style>
+:root{
+  --main:#0E7C74; --main-d:#09594F; --main-l:#E1F2EE; --main-ll:#F0F8F6;
+  --accent:#F4B43A; --accent-d:#C98A12; --accent-l:#FFF1D2; --accent-ink:#3B2A00;
+  --bg:#FFF8EE; --card:#FFFFFF; --ink:#22302E; --ink2:#55625F; --line:#EDE2D1;
+  --off:#D8D8D4; --off-ink:#62625D;
+  --sh:0 6px 18px rgba(90,64,24,.10),0 1px 3px rgba(90,64,24,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDE3D3;color:var(--ink);font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-d);outline-offset:3px}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.page > h1{font-size:1.5rem;margin:0 0 6px}
+.page > p{margin:0 0 4px;color:var(--ink2)}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:20px}
+figure{margin:0}
+figcaption{font-weight:800;font-size:.9rem;margin-bottom:10px}
+iframe{display:block;border:0;border-radius:36px;background:var(--bg);box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.sample{width:390px;background:var(--bg);border-radius:36px;padding:18px 20px 24px;box-shadow:0 0 0 8px #2A2724,0 20px 40px rgba(60,40,10,.25)}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:0 8px;font-size:.75rem;font-weight:800;margin-bottom:8px}
+h2{font-size:1.15rem;margin:18px 0 8px;line-height:1.35}
+h3{font-size:.95rem;margin:10px 0 4px}
+.card{background:var(--card);border-radius:24px;padding:16px 18px;box-shadow:var(--sh)}
+.muted{color:var(--ink2);font-size:.86rem;margin:0}
+.prop{background:#fff;border-radius:24px;padding:16px 18px;box-shadow:inset 0 0 0 3px var(--accent),var(--sh);border:2px dashed var(--accent-d)}
+.prop h2{margin-top:0;display:flex;align-items:center;gap:8px}
+.prop h2 img{flex:none;border-radius:14px;background:var(--accent-l)}
+.prop p{margin:0 0 6px}
+.prop ul{margin:0;padding-left:1.2em;font-size:.92rem}
+.str{display:inline-block;margin-left:6px;border-radius:999px;padding:0 8px;font-size:.72rem;font-weight:800;background:var(--main-ll);color:var(--main-d)}
+.go{margin-top:10px;background:var(--accent-l);color:#6B4A00;border-radius:14px;padding:8px 12px;font-weight:800;font-size:.92rem}
+.wait{margin-top:10px;background:#EEEDE9;color:var(--off-ink);border-radius:14px;padding:8px 12px;font-weight:800;font-size:.92rem}
+.shop{width:100%;min-height:60px;border:0;border-radius:18px;background:#fff;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;padding:8px 14px;text-align:left}
+.shop .ic{flex:none;width:40px;height:40px;border-radius:50%;background:var(--main-l);color:var(--main-d);display:grid;place-items:center}
+.shop .tx{flex:1}
+.shop b{display:block;line-height:1.3}
+.shop small{color:var(--ink2);font-weight:700}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:58px;border:0;border-radius:18px;font-weight:800;font-size:1.05rem}
+.btn.primary{background:var(--main);color:#fff;box-shadow:0 6px 0 var(--main-d)}
+.btn.gold{background:var(--accent);color:var(--accent-ink);box-shadow:0 6px 0 var(--accent-d)}
+.plus{border-radius:999px;padding:0 8px;background:var(--accent);color:var(--accent-ink);font-size:.8rem}
+.btns{display:grid;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:.84rem;background:#fff;border-radius:12px;overflow:hidden}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+th{background:var(--main-ll)}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>SC-04 スポット詳細（画面モック）</h1>
+  <p>左は見た目の正（<code>index.html#detail</code>、名古屋城）。ひとこと・誘うは「ほかにも さいころが振れること」のカードから SC-11・SC-08 へ。下の固定ボタンは QR だけ。</p>
+  <p>右は index.html に無い所の見本: <strong>予言の場所</strong>のカード（再訪の日／そうでない日）、押せる近くのお店の行、下の操作の2つの状態、ほかの状態。設計: <code>docs/20_設計/画面設計/SC-04_スポット詳細.md</code></p>
+  <div class="row">
+    <figure>
+      <figcaption>index.html のスポット詳細（正）</figcaption>
+      <iframe src="index.html#detail" title="index.html のスポット詳細画面" width="390" height="844"></iframe>
+    </figure>
+    <section class="sample" aria-labelledby="s4-h">
+      <span class="tag">本番の見本（index.html と違う所）</span>
+      <h2 id="s4-h">予言の場所（再訪の日）</h2>
+      <div class="prop">
+        <h2><img src="../アバター/tomonyan/tomonyan-happy.svg" alt="ともにゃん（にこにこ）" width="44" height="44">ともにゃんの予言の場所</h2>
+        <p>前の旅で「次は秋の夕方、ここが気に入るはず」と予言したよ。</p>
+        <h3>予言の理由</h3>
+        <ul>
+          <li>夕方に出かけることが多い<span class="str">強い</span></li>
+          <li>同じ「60代以上・夫婦」の人がよく行く<span class="str">中くらい</span></li>
+          <li>段差が少ない<span class="str">弱い</span></li>
+        </ul>
+        <p class="go">ここで QR を読むと答え合わせ。さいころ2回</p>
+      </div>
+      <p class="muted" style="margin-top:10px">再訪の日でない（旅の初日・2日目）とき、最後の行だけが替わる:</p>
+      <p class="wait">答え合わせは、次に来た日（前回から7日以上あけた日）にできます</p>
+
+      <h2>近くのお店（行を押せる）</h2>
+      <button type="button" class="shop"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13"/></svg></span><span class="tx"><b>きしめん ひだまり</b><small>飲食・約 900 m</small></span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></button>
+      <p class="muted" style="margin-top:6px">距離はまっすぐ測った長さです。押すとそのお店の詳細（SC-04）へ【仮定】。</p>
+
+      <h2>下の操作（1つだけ）</h2>
+      <div class="btns">
+        <button type="button" class="btn primary">QRスタンプを読む <span class="plus">＋1</span></button>
+        <button type="button" class="btn gold">すごろくで遊ぶ</button>
+      </div>
+      <p class="muted" style="margin-top:10px">上: QR がまだ → SC-10。下: QR の後 → SC-05。</p>
+
+      <h2>ほかの状態</h2>
+      <table>
+        <tr><th scope="col">状態</th><th scope="col">画面</th></tr>
+        <tr><td>読み込み中</td><td>中身はすぐ出る。<code>doneToday</code> の取り直し中だけ、チップの場所に「読み込み中…」</td></tr>
+        <tr><td>見つからない</td><td>「このスポットは見つかりませんでした」と「スポットにもどる」</td></tr>
+        <tr><td>エラー</td><td>「うまくいきませんでした。少し待ってから もう一度ためしてね。」と「もう一度」</td></tr>
+        <tr><td>オフライン</td><td>同じ PC のサーバーなので、そのまま使える。地図が無いので「オフライン表示中」は出さない</td></tr>
+        <tr><td>今日はぜんぶ済み</td><td>ひとこと・誘うのカードが「✓ 今日は済み」、下は「すごろくで遊ぶ」</td></tr>
+      </table>
+    </section>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,242 @@
+﻿/* mock.css（index.html）の上書きと、モックに無い部品。見た目はモックに合わせる */
+
+/* 本番は確認用の画面一覧なし。広い画面ではモックと同じスマホの枠、狭い画面では全面 */
+.side{display:none}
+#root{min-height:100vh}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.strong{font-weight:800}
+.center{text-align:center}
+.row.spread{justify-content:space-between;font-weight:800;flex-wrap:wrap;gap:4px 14px}
+.muted.center{margin-top:14px}
+
+/* 起動・失敗 */
+main.boot{display:grid;place-items:center;text-align:center}
+.loading{font-weight:800;color:var(--main-d)}
+.problem{background:#fff;border-radius:22px;padding:18px;box-shadow:var(--sh);border:3px solid #E7A089;max-width:340px}
+.problem p{font-weight:800;margin-bottom:12px}
+.problem .row{gap:10px}
+.problem.floating{position:absolute;left:16px;right:16px;max-width:none;bottom:calc(var(--tabh) + 96px);z-index:45}
+
+/* アバター（<img> を重ね、読み上げ中は talk と交互に） */
+.avimg{position:relative;display:inline-grid;line-height:0}
+.avimg > img{grid-area:1/1;display:block;max-width:100%;height:auto}
+.avimg > img.talk{opacity:0}
+.avimg > img.talk.on{opacity:1}
+.avimg[data-mouth="open"] > img:first-child{opacity:0}
+.avatar .avimg{width:78px}
+.piece .avimg{width:40px}
+
+/* 読み上げの声のクレジット（VOICEVOX のときだけ） */
+.credit{position:absolute;right:10px;bottom:calc(var(--tabh) + 8px);z-index:35;background:rgba(255,255,255,.95);color:var(--ink2);border-radius:999px;padding:2px 10px;font-size:.72rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+
+/* すごろく */
+.boardcard{margin-top:14px;padding:14px}
+.board.tall{height:auto}
+.boardtext{margin-top:12px;font-size:.9rem;font-weight:700;color:var(--ink2)}
+.live .result{margin-top:12px}
+.stat .grow > *{display:block}
+.stat .grow .chip{display:inline-flex;margin-top:4px}
+
+/* 地図（Leaflet・簡易地図） */
+.leaflet-box{position:absolute;inset:0;z-index:0;background:#F3EEE3}
+.leaflet-container{font:inherit}
+.leaflet-marker-icon.mkicon{background:none;border:0}
+.mkicon > .mk{position:absolute;left:0;top:0;width:48px;transform:none}
+.mkicon:focus-visible{outline:none}
+.mkicon:focus-visible .pin{outline:3px solid var(--accent-d);outline-offset:3px}
+.simplemap{position:absolute;inset:0;overflow:hidden}
+.simplemap .simplebg{position:absolute;inset:0;width:100%;height:100%}
+.simplemap .mk{transform:translate(-50%,-24px)}
+/* 出典・「オフライン表示中」・説明にアイコンが隠れないよう、置く範囲を内側にとる（WCAG 2.4.11） */
+.simplearea{position:absolute;top:118px;bottom:84px;left:34px;right:34px}
+.offbadge{position:absolute;left:10px;top:52px;z-index:6;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border-radius:999px;background:var(--ink);color:#fff;font-size:.8rem;font-weight:800}
+.offhint{position:absolute;left:10px;right:70px;bottom:10px;z-index:6;background:rgba(255,255,255,.94);border-radius:14px;padding:6px 10px;font-size:.78rem;font-weight:700;color:var(--ink2)}
+.attr.inline{position:static;display:inline-flex;margin-bottom:12px;box-shadow:none;background:#fff}
+.here{position:absolute;transform:translate(-50%,-50%);z-index:4;background:#D2402A;color:#fff;border-radius:999px;padding:2px 10px;font-size:.75rem;font-weight:800;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.hereicon .here,.here.inline{position:static;transform:none;display:inline-block}
+.voicenow{margin-top:10px}
+
+/* モックのインライン style を CSS へ（CSP の style-src 'self'） */
+.gap6{margin-top:6px}
+.gap8{margin-top:8px}
+.gap10{margin-top:10px}
+.gap12{margin-bottom:12px}
+.gap14{margin-top:14px}
+.gap16{margin-top:16px}
+.small{font-size:.8rem;margin-top:6px}
+.row.wrap6{gap:6px;flex-wrap:wrap}
+ul.plain{list-style:none;margin:0;padding:0}
+
+/* スポット・詳細 */
+.sheet .hd h2:focus{outline:none}
+.sheet .hd h2:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+.hero .dot.d1{width:120px;height:120px;left:-30px;bottom:-40px}
+.hero .dot.d2{width:70px;height:70px;right:24px;top:-18px}
+.do .chev,.shop .chip{flex:none}
+.do .chev{color:var(--ink2)}
+button.shop{width:100%;min-height:62px;border:0;border-top:1px solid var(--line);background:none;text-align:left;font:inherit;color:inherit}
+button.shop:first-of-type{border-top:0}
+.voice .chip{display:inline-flex}
+.btn:disabled{opacity:.6}
+.chipbtn[aria-pressed="true"]{background:var(--main);color:#fff}
+
+/* 特典（SC-07）・うわさ（SC-06）。部品は mock.css（index.html）の .cp・.dialog・.rank・.hours */
+.top4{margin-top:4px}
+.mlauto{margin-left:auto}
+.gap18b{margin-bottom:18px}
+.card.stamps{display:flex;align-items:center}
+.cp{margin-top:16px}
+.hours{margin-top:14px}
+
+/* すごろく（SC-05 のモック）: 立体のさいころ。面の対は 1-6・2-5・3-4 */
+.scene{flex:none;width:76px;height:76px;perspective:420px}
+.cube{position:relative;width:76px;height:76px;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.2,.8,.3,1)}
+.face{position:absolute;left:0;top:0;width:76px;height:76px;background:#fff;border:3px solid var(--ink);border-radius:18px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:9px;backface-visibility:hidden}
+.face i{width:13px;height:13px;border-radius:50%;place-self:center;background:transparent}
+.face i.on{background:var(--ink)}
+.f1 i.on{background:#D2402A;width:18px;height:18px}
+.f1{transform:rotateY(0deg) translateZ(38px)}
+.f6{transform:rotateY(180deg) translateZ(38px)}
+.f3{transform:rotateY(90deg) translateZ(38px)}
+.f4{transform:rotateY(-90deg) translateZ(38px)}
+.f2{transform:rotateX(90deg) translateZ(38px)}
+.f5{transform:rotateX(-90deg) translateZ(38px)}
+.cube.show-1{transform:rotateX(-14deg) rotateY(14deg)}
+.cube.show-6{transform:rotateX(-14deg) rotateY(194deg)}
+.cube.show-3{transform:rotateX(-14deg) rotateY(-76deg)}
+.cube.show-4{transform:rotateX(-14deg) rotateY(104deg)}
+.cube.show-2{transform:rotateX(-104deg) rotateY(14deg)}
+.cube.show-5{transform:rotateX(76deg) rotateY(14deg)}
+.cube.rolling{animation:tumble 2.6s cubic-bezier(.15,.55,.3,1) infinite}
+@keyframes tumble{
+  0%{transform:rotateX(0deg) rotateY(0deg) translateY(0)}
+  20%{transform:rotateX(380deg) rotateY(240deg) translateY(-18px)}
+  45%{transform:rotateX(760deg) rotateY(560deg) translateY(0)}
+  60%{transform:rotateX(960deg) rotateY(700deg) translateY(-8px)}
+  100%{transform:rotateX(1440deg) rotateY(1080deg) translateY(0)}
+}
+ul.legend{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px}
+ul.legend li{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:800;background:var(--main-ll);color:var(--main-d)}
+ul.legend li.g{background:var(--accent-l);color:#6B4A00}
+.gainband{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:10px 14px;border-radius:16px;background:var(--accent);color:var(--accent-ink);font-weight:800}
+.result .btn.sm{min-height:48px}
+.live .buddy{margin-top:12px}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:40}
+.confetti i{position:absolute;top:-16px;width:10px;height:14px;border-radius:2px;animation:fall 2.2s linear both}
+.confetti.short i{animation-duration:.8s}
+@keyframes fall{to{top:105%;transform:translateX(30px) rotate(540deg)}}
+@media (prefers-reduced-motion: reduce){
+  .cube.rolling{animation-duration:.4s}
+  .cube{transition-duration:.1s}
+}
+
+/* 予言（SC-09）。色・角丸は index.html に合わせる */
+.card.next{margin-top:16px}
+.card.next h2{margin:0 0 4px}
+.buddy.top0{margin-top:4px}
+.pcard{margin-top:16px;background:var(--main);color:#fff;border-radius:24px;padding:18px;box-shadow:0 5px 0 var(--main-d)}
+.pcard h2{margin:0 0 10px;font-size:1rem;color:#FFF1D2}
+.pcard h3{margin:14px 0 6px;font-size:.9rem;color:#FFF1D2}
+.pspot{display:flex;gap:14px;align-items:center}
+.pspot .ic{flex:none;width:56px;height:56px;border-radius:18px;background:#fff;color:var(--main);display:grid;place-items:center}
+.pname{display:block;font-size:1.3rem}
+.pwhen{display:block;font-weight:700;color:#FFF1D2}
+.reasons li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.2)}
+.reasons li:first-child{border-top:0}
+.rtext{font-weight:700}
+.rstr{font-weight:800;color:#FFF1D2}
+.rbar{grid-column:1/-1;height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden}
+.rbar i{display:block;height:100%;background:var(--accent)}
+.rbar.strong i{width:100%}
+.rbar.mid i{width:66%}
+.rbar.weak i{width:33%}
+.pcard .btn{margin-top:12px}
+details.how{margin-top:6px}
+details.how summary{min-height:44px;display:flex;align-items:center;font-weight:800;color:var(--main-d);cursor:pointer}
+details.how p{font-size:.9rem}
+.stars{font-size:1.3rem;color:#8A5A00;letter-spacing:2px}
+.hist li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:.92rem}
+.hist li:first-child{border-top:0}
+.hist .mark{font-weight:800;white-space:nowrap}
+.lrow .grow .muted{display:block}
+.gold-card{border:4px solid var(--accent);background:var(--accent-l);text-align:center}
+.gold-card h2{margin:0 0 6px}
+.big-dice{display:inline-flex;align-items:center;gap:8px;font-size:1.5rem;font-weight:800;color:#6B4A00}
+.answers{display:grid;gap:10px;margin-top:12px}
+.result-line{margin-top:12px;font-weight:800;color:var(--main-d);min-height:1.5em}
+.event .grow{flex:1;min-width:0}
+.evname{display:block;font-size:1.08rem;margin-top:4px}
+.event .chev{color:var(--ink2)}
+.avgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.avcard{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:168px;padding:14px 10px;border:3px solid transparent;border-radius:24px;background:#fff;box-shadow:var(--sh);text-align:center;font:inherit;color:var(--ink)}
+.avcard.now{border-color:var(--main)}
+.avcard.off .avimg img{filter:brightness(0);opacity:.3}
+.avcard.off{cursor:not-allowed}
+.avcard .muted{font-size:.85rem}
+.lic dt{font-weight:800;margin-top:10px}
+.lic dt:first-child{margin-top:0}
+.lic dd{margin:2px 0 0}
+.lic a{color:var(--main-d);font-weight:700}
+.alllist{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.alllist .btn{min-height:48px}
+.demo{border:3px dashed var(--ink2)}
+.demo .row{flex-wrap:wrap;gap:8px;margin-top:8px}
+.demo label{display:block;font-weight:800;margin-top:12px}
+.demo select{width:100%;min-height:48px;border-radius:14px;border:2px solid var(--line);background:#fff;padding:0 12px;font:inherit;font-weight:700}
+
+/* 次に行く予定（U-10） */
+.plan{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.plan .btn{min-height:44px}
+.plan p{flex-basis:100%;margin:0}
+
+/* SC-05: 相棒のセリフは盤の上に重ねる */
+.boardwrap{position:relative}
+.boardwrap .buddy.big{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:88%;z-index:5;margin:0;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.boardwrap .buddy.big .av{width:130px;height:130px;border-radius:32px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.boardwrap .buddy.big .bubble{flex:none;width:100%;border-radius:22px;font-size:1.15rem;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.boardwrap .buddy.big{pointer-events:none;animation:buddyfade .6s ease 6s forwards}
+@keyframes buddyfade{to{opacity:0}}
+.demo-more{display:block;margin:8px 0 0 auto;min-height:44px;min-width:44px;padding:0 14px;background:var(--accent-l);border:2px dashed var(--ink2);border-radius:999px;font:inherit;font-size:.85rem;font-weight:800;color:var(--ink);cursor:pointer}
+
+/* 振ったあとの一言とボタン（SC-05 操作エリア） */
+.quick{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quick .hint{margin:0}
+.quick .btn{width:100%}
+
+/* ホーム: セリフはともにゃんの横（絵の高さの中ほど）、「すごろくの続き」は小さめ */
+.hello{align-items:center}
+.hello .bubble{border-radius:22px 22px 22px 8px}
+.cont{margin-top:14px;padding:8px 12px;border-radius:22px}
+.cont .prog{display:flex;align-items:center;gap:10px;font-size:.85rem}
+.cont .prog .bar{flex:1;height:8px;margin:0}
+.cont .btn{width:100%;margin-top:6px;min-height:48px}
+.hello{align-items:flex-start}
+.hello .bubble{margin-top:22px}
+
+/* 「すごろくの続き」の緑の枠は無し */
+.cont{background:none;box-shadow:none;color:var(--ink);padding:0;border-radius:0;overflow:visible}
+.cont::after{display:none}
+.cont .prog{font-weight:800}
+.cont .bar{background:var(--main-l)}
+
+/* 特典などで止まったときのセリフは、盤ではなく画面（.phone）の真ん中に出す。盤は縦に長く、盤の真ん中だと画面の外になるため */
+.boardwrap{position:static}
+.boardwrap .buddy.big{z-index:20}
+
+/* 「おめでとう」（プレゼント・割引マス）。.phone の中で全画面。さいころ(42)より上、紙吹雪は箱より前 */
+.congrats{position:absolute;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 50% 40%,#FFD66B,#F4B43A 55%,#C98A12);animation:cgin .35s ease both}
+.congrats .confetti{z-index:46}
+.cg-box{position:relative;z-index:47;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;width:100%;max-width:340px}
+.cg-ic{display:grid;place-items:center;width:112px;height:112px;border-radius:50%;background:#fff;color:var(--accent-ink);box-shadow:0 10px 28px rgba(59,42,0,.3);animation:cgpop .7s ease both}
+.congrats h2{margin:0;font-size:2.4rem;line-height:1.2;color:var(--accent-ink);text-shadow:0 2px 0 rgba(255,255,255,.6)}
+.cg-sub{margin:0;font-weight:800;font-size:1.1rem;color:var(--accent-ink)}
+.cg-coupon{margin:0;background:#fff;border-radius:20px;padding:14px 18px;font-weight:800;font-size:1.2rem;color:var(--ink);box-shadow:0 6px 18px rgba(59,42,0,.25);width:100%}
+.congrats .btn{width:100%;margin-top:6px}
+@keyframes cgin{from{opacity:0}to{opacity:1}}
+@keyframes cgpop{0%{transform:scale(.3)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.cg-big{display:grid;place-items:center;width:210px;height:210px;filter:drop-shadow(0 10px 14px rgba(59,42,0,.35));animation:cgpop .7s ease both}
+.congrats.calm,.congrats.calm .cg-ic,.congrats.calm .cg-big{animation:none}
+@media (prefers-reduced-motion:reduce){.congrats,.cg-ic,.cg-big{animation:none}}
+
+.avwrap{display:flex;flex-direction:column;gap:6px}.avwrap .avcard{flex:1}.avlisten{min-height:44px;min-width:44px;width:100%}
